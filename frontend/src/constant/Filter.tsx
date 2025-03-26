@@ -1,0 +1,27 @@
+export const filters = {
+    condition: ["Excellent", "Good", "Fair"],
+    category: [
+      "College Books (Higher Education Textbooks)",
+      "Exam/Test Preparation Books",
+      "Reading Books (Novels, Children, Business, Literature, History, etc.)",
+      "School Books (up to 12th)",
+    ],
+    classType: [
+      "B.Tech",
+      "B.Sc",
+      "B.Com",
+      "BCA",
+      "MBA",
+      "M.Tech",
+      "M.Sc",
+      "Ph.D",
+      "12th",
+      "11th",
+      "10th",
+      "9th",
+      "8th",
+      "7th",
+      "6th",
+      "5th",
+    ],
+  };
