@@ -44,6 +44,7 @@ passport.use(
           profilePicture: photos?.[0]?.value,
           isVerified:true,
           agreeTerms:true,
+          role:'user'
         });
         done(null, user);
       } catch (error) {

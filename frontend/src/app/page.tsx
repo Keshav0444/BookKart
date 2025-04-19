@@ -19,6 +19,9 @@ import {
   Store,
 } from "lucide-react";
 import NewBooks from "@/app/Homepage/NewBooks";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useRouter } from "next/navigation";
 
 const bannerImages = [
   "/images/book1.jpg",
@@ -100,7 +103,16 @@ const buySteps = [
 
 export default function Homepage() {
   const [currentImage, setCurrentImage] = useState(0);
+    const user = useSelector((state: RootState) => state.user.user);
+   const router= useRouter()
 
+    useEffect(() =>{
+      if(user && user.role !== "user"){
+        router.push('/admin')
+      }
+    },[user,router])
+
+    
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % bannerImages.length);

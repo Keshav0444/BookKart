@@ -62,6 +62,12 @@ export default function SellBookPage() {
       images: [] 
     }
   });
+  
+      useEffect(() =>{
+        if(user && user.role !== "user"){
+          router.push('/admin')
+        }
+      },[user,router])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

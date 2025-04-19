@@ -18,6 +18,7 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
     const checkAuth = async () => {
       try {
         const response = await verifyAuth({}).unwrap();
+        console.log(response)
         if (response.success) {
           dispatch(setUser(response.data));
           dispatch(setEmailVerified(response.data.isVerified));

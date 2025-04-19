@@ -78,22 +78,22 @@ export function OrderDetailsDialog({ order }: OrderDetailsDialogProps) {
           <div className="bg-gradient-to-r from-blue-100 to-cyan-100 p-4 rounded-lg">
             <h3 className="font-semibold text-lg text-blue-800 mb-2">Items</h3>
             <div className="space-y-4">
-              {order.items.map((item, index) => (
+              {order?.items.map((item, index) => (
                 <div key={index} className="flex items-center space-x-4">
                   <Image 
-                    src={item.product.images[0] || '/placeholder.png'} 
-                    alt={item.product.subject} 
+                    src={item?.product?.images[0] || '/placeholder.png'} 
+                    alt={item?.product?.subject} 
                     width={60} 
                     height={60} 
                     className="rounded-md"
                   />
                   <div>
-                  <p className="font-medium">{item.product.title}</p>
+                  <p className="font-medium">{item?.product?.title}</p>
                     <div className='flex gap-2'>
-                    <p className="font-medium">{item.product.subject}</p>
-                    ({order.items.map(item => item.product.author).join(", ")}) 
+                    <p className="font-medium">{item?.product?.subject}</p>
+                    ({order.items.map(item => item?.product?.author).join(", ")}) 
                     </div>
-                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                    <p className="text-sm text-gray-600">Quantity: {item?.quantity}</p>
                   </div>
                 </div>
               ))}
@@ -102,8 +102,8 @@ export function OrderDetailsDialog({ order }: OrderDetailsDialogProps) {
 
           <div className="bg-gradient-to-r from-green-100 to-teal-100 p-4 rounded-lg">
             <h3 className="font-semibold text-lg text-green-800 mb-2">Shipping Address</h3>
-            <p>{order.shippingAddress.addressLine1}</p>
-            <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
+            <p>{order?.shippingAddress?.addressLine1}</p>
+            <p>{order?.shippingAddress?.city}, {order?.shippingAddress?.state} - {order?.shippingAddress?.pincode}</p>
           </div>
 
           <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg">

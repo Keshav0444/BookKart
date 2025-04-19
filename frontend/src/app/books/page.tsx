@@ -29,6 +29,8 @@ import NoData from "@/lib/NoData";
 import BookLoader from "@/lib/BookLoader";
 import { useRouter } from "next/navigation";
 import { filters } from "@/constant/Filter";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 
 export default function BooksPage() {
@@ -41,6 +43,15 @@ export default function BooksPage() {
   const { data: apiResponse = {}, isLoading } = useGetProductsQuery({});
   const [books, setBooks] = useState<BookDetails[]>([]);
   const router = useRouter();
+
+      const user = useSelector((state: RootState) => state.user.user);
+
+  
+      useEffect(() =>{
+        if(user && user.role !== "user"){
+          router.push('/admin')
+        }
+      },[user,router])
 
   const searchTerm = new URLSearchParams(window.location.search).get('search') || "";
 

@@ -20,6 +20,7 @@ export interface IOrder extends Document {
     razorpay_signature?: string;
   };
   status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  notes?:string;
 }
 
 const orderItemSchema = new Schema<IOrderItem>({
@@ -40,6 +41,7 @@ const orderSchema = new Schema<IOrder>({
     razorpay_signature: { type: String },
   },
   status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' },
+  notes:{type:String},
 }, { timestamps: true });
 
 export default mongoose.model<IOrder>('Order', orderSchema);

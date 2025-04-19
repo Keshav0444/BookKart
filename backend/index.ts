@@ -8,6 +8,7 @@ import wishlistRoutes from './routes/wishListRoute';
 import orderRoutes from './routes/orderRoute';
 import addressRoute from './routes/addressRoute';
 import userRoute from './routes/userRoute';
+import adminRoute from './routes/adminRoute'
 import connectDB from './config/dbConfig';
 import passport from './controllers/strategy/google.strategy';
 import cookieParser from "cookie-parser";
@@ -37,6 +38,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/address', addressRoute);
 app.use('/api/users', userRoute);
+app.use('/api/admin', adminRoute);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

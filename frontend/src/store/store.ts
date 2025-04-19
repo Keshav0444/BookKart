@@ -7,6 +7,7 @@ import userReducer from './slices/userSlice';
 import cartReducer from './slices/cartSlice';
 import wishlistReducer from './slices/wishlistSlice';
 import checkoutReducer from './slices/checkoutSlice'
+import { adminApi } from './adminApi';
 
 // Persist configuration for user, cart, and wishlist slices
 const userPersistConfig = { key: 'user', storage, whitelist: ['user', 'isEmailVerified','isLoggedIn'] };
@@ -26,7 +27,8 @@ const persistedCheckoutReducer = persistReducer(checkoutPersistConfig, checkoutR
 // Configure store with persisted reducers
 export const store = configureStore({
   reducer: {
-    [api.reducerPath]: api.reducer, // RTK Query API
+    [api.reducerPath]: api.reducer,
+    [adminApi.reducerPath]: adminApi.reducer,// RTK Query API
     user: persistedUserReducer,
     cart: persistedCartReducer,
     wishlist: persistedWishlistReducer,
@@ -37,7 +39,8 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER], 
       },
-    }).concat(api.middleware),
+    }).concat(api.middleware)
+    .concat(adminApi.middleware),
 });
 
 // Setup listeners for RTK Query

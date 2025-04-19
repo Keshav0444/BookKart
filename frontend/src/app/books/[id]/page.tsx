@@ -56,6 +56,14 @@ export default function BookDetailsPage() {
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+      const user = useSelector((state: RootState) => state.user.user);
+  
+      useEffect(() =>{
+        if(user && user.role !== "user"){
+          router.push('/admin')
+        }
+      },[user,router])
+
   useEffect(() => {
     if (apiResponse?.success) {
       setBook(apiResponse.data);

@@ -6,6 +6,7 @@ declare global {
   namespace Express {
     interface Request {
       id: string;
+      role:string;
     }
   }
 }
@@ -25,6 +26,7 @@ const authenticateUser = async (req: Request, res: Response, next: NextFunction)
     }
 
     req.id = decoded.userId;
+    req.role= decoded.role;
     next();
   } catch (error) {
     return response(res, 401, 'Not authorized, token failed');

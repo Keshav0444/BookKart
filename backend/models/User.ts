@@ -15,6 +15,7 @@ export interface IUser extends Document {
   agreeTerms:boolean;
   addresses: mongoose.Types.ObjectId[];
   comparePassword(candidatePassword: string): Promise<boolean>;
+  role: "user" | "admin"
 }
 
 const userSchema = new Schema<IUser>({
@@ -30,6 +31,7 @@ const userSchema = new Schema<IUser>({
   addresses: [{ type: Schema.Types.ObjectId, ref: 'Address' }], 
   resetPasswordToken: {type:String,default:null},
   resetPasswordExpires: {type:Date,default:null},
+  role: {type:String, enum:["user","admin"], default:'user'},
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
