@@ -53,7 +53,7 @@ export const getAllOrders = async(req:Request,res:Response) => {
 }
 
 
-
+//update order
 export const updateOrder = async (req:Request,res:Response) =>{
     try {
         const {id} = req.params;
