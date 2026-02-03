@@ -1,6 +1,6 @@
-backend/node_modules
-frontend/node_modules
+Backend/node_modules
+Frontend/node_modules
 
 #Ingnore env 
-backend/.env
-frontend/.env
+Backend/.env
+Frontend/.env

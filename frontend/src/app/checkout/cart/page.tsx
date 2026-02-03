@@ -55,18 +55,18 @@ export default function CheckoutPage() {
   const [createOrUpdateOrder] = useCreateOrUpdateOrderMutation();
   const { data: orderData, isLoading: isOrderLoading } = useGetOrderByIdQuery(orderId || '');
   const [createRazorpayOrder] = useCreateRazorpayPaymentMutation();
-  const [selectedAddress,setSelectedAddress] = useState<Address | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
 
-   useEffect(() =>{
-     if(user && user.role !== "user"){
-       router.push('/admin')
-     }
-   },[user,router])
+  useEffect(() => {
+    if (user && user.role !== "user") {
+      router.push('/admin')
+    }
+  }, [user, router])
 
   useEffect(() => {
     if (orderData && orderData.shippingAddress) {
-     setSelectedAddress(orderData.shippingAddress);
+      setSelectedAddress(orderData.shippingAddress);
     }
   }, [orderData]);
 
@@ -131,9 +131,14 @@ export default function CheckoutPage() {
   const totalOriginalPrice = cart.items.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
   const totalDiscount = totalOriginalPrice - totalAmount;
 
-  const shippingCharge = cart.items.map(item => item.product.shippingCharge.toLowerCase() === 'free' ? 0 : parseFloat(item.product.shippingCharge) || 0)
-  const maximunShippingCharge = Math.max(...shippingCharge,0)
-  const finalAmount = totalAmount+ maximunShippingCharge;
+  const shippingCharge = cart.items.map(item => {
+    const charge = item?.product?.shippingCharge || "0"; // fallback to "0"
+    return charge.toString().toLowerCase() === "free"
+      ? 0
+      : parseFloat(charge) || 0;
+  });
+  const maximunShippingCharge = Math.max(...shippingCharge, 0)
+  const finalAmount = totalAmount + maximunShippingCharge;
 
   const handleOpenLogin = () => {
     dispatch(toggleLoginDialog());
@@ -170,7 +175,7 @@ export default function CheckoutPage() {
     setShowAddressDialog(false);
     if (orderId) {
       try {
-        await createOrUpdateOrder({updates: { orderId,shippingAddress: address } }).unwrap();
+        await createOrUpdateOrder({ updates: { orderId, shippingAddress: address } }).unwrap();
         toast.success("Address updated successfully");
       } catch (error) {
         console.error(error);
@@ -181,28 +186,34 @@ export default function CheckoutPage() {
 
   const handlePayment = async () => {
     if (!orderId) {
-      toast.error('No order found. Please try again.');
+      toast.error("No order found. Please try again.");
       return;
     }
-  
+
     setIsProcessing(true);
+
     try {
-      const { data, error } = await createRazorpayOrder(orderId);
-      console.log('Razorpay Order Data:', data);
-  
-      if (error) {
-        throw new Error('Failed to create Razorpay order');
+      // ✅ RTK Query: ALWAYS use unwrap()
+      const response = await createRazorpayOrder(orderId).unwrap();
+
+      console.log("Razorpay Order Response:", response);
+
+      // ✅ Defensive checks
+      if (!response?.data?.order?.id) {
+        throw new Error("Invalid Razorpay order response");
       }
 
-      const razorpayOrder = data.data.order;
-  
+
+      const razorpayOrder = response.data.order;
+
       const options = {
-        key: 'rzp_test_4GI77KLfXcjflR',
-        amount: razorpayOrder.amount,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_RponYYn21pLOo9",
+        amount: razorpayOrder.amount, // must be in paise (backend responsibility)
         currency: razorpayOrder.currency,
-        name: 'BookKart',
-        description: 'Book Purchase',
+        name: "BookKart",
+        description: "Book Purchase",
         order_id: razorpayOrder.id,
+
         handler: async function (response: any) {
           try {
             const result = await createOrUpdateOrder({
@@ -215,34 +226,43 @@ export default function CheckoutPage() {
                 },
               },
             }).unwrap();
+
             if (result.success) {
               dispatch(clearCart());
               dispatch(resetCheckout());
-              toast.success('Payment successful!');
+              toast.success("Payment successful!");
               router.push(`/checkout/payment-success?orderId=${orderId}`);
             } else {
-              throw new Error(result.message || 'Failed to update order');
+              throw new Error(result.message || "Failed to update order");
             }
-          } catch (error) {
-            console.error('Failed to update order:', error);
-            toast.error('Payment successful, but failed to update order. Please contact support.');
+          } catch (err) {
+            console.error("Order update failed:", err);
+            toast.error(
+              "Payment was successful, but order update failed. Contact support."
+            );
           }
         },
+
         prefill: {
           name: orderData?.data?.user?.name,
           email: orderData?.data?.user?.email,
           contact: orderData?.data?.shippingAddress?.phoneNumber,
         },
+
         theme: {
-          color: '#3399cc',
+          color: "#3399cc",
         },
       };
 
+      if (!window.Razorpay) {
+        throw new Error("Razorpay SDK not loaded");
+      }
+
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to initiate payment. Please try again.');
+    } catch (err: any) {
+      console.error("Payment init error:", err);
+      toast.error(err?.message || "Failed to initiate payment");
     } finally {
       setIsProcessing(false);
     }
@@ -266,14 +286,14 @@ export default function CheckoutPage() {
         description="Looks like you haven't added any items yet. 
         Explore our collection and find something you love!"
         buttonText="Browse Books"
-        imageUrl="/images/cart.webp" 
+        imageUrl="/images/cart.webp"
         onClick={() => router.push('/books')}
       />
     );
   }
 
   if (isCartLoading || isOrderLoading) {
-     return <BookLoader/> ;
+    return <BookLoader />;
   }
 
   return (
@@ -295,11 +315,10 @@ export default function CheckoutPage() {
             <div className="flex justify-center items-center gap-4">
               <div className="flex items-center gap-2">
                 <div
-                  className={`rounded-full p-3 ${
-                    step === "cart"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
+                  className={`rounded-full p-3 ${step === "cart"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-600"
+                    }`}
                 >
                   <ShoppingCart className="h-6 w-6" />
                 </div>
@@ -308,11 +327,10 @@ export default function CheckoutPage() {
               <ChevronRight className="h-5 w-5 text-gray-400" />
               <div className="flex items-center gap-2">
                 <div
-                  className={`rounded-full p-3 ${
-                    step === "address"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
+                  className={`rounded-full p-3 ${step === "address"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-600"
+                    }`}
                 >
                   <MapPin className="h-6 w-6" />
                 </div>
@@ -321,11 +339,10 @@ export default function CheckoutPage() {
               <ChevronRight className="h-5 w-5 text-gray-400" />
               <div className="flex items-center gap-2">
                 <div
-                  className={`rounded-full p-3 ${
-                    step === "payment"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
+                  className={`rounded-full p-3 ${step === "payment"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-600"
+                    }`}
                 >
                   <CreditCard className="h-6 w-6" />
                 </div>
@@ -397,7 +414,7 @@ export default function CheckoutPage() {
               <DialogHeader>
                 <DialogTitle>Select or Add Delivery Address</DialogTitle>
               </DialogHeader>
-              <CheckoutAddress 
+              <CheckoutAddress
                 onAddressSelect={handleAddressSelect}
                 selectedAddressId={selectedAddress?._id}
               />

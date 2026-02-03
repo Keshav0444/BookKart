@@ -276,7 +276,7 @@ const page = () => {
                       fill="#8884d8"
                       dataKey="value"
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `₹{name}: ${(percent * 100).toFixed(0)}%`
                       }
                     >
                       {orderStatusData.map((entity, index) => (
@@ -338,15 +338,14 @@ const page = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-semibold *:
-                              ${
-                                order.status === "delivered"
-                                  ? "bg-green-100 text-green-800"
-                                  : order.status === "processing"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : order.status === "shipped"
+                              ${order.status === "delivered"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "processing"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : order.status === "shipped"
                                   ? "bg-blue-100 text-blue-800"
                                   : "bg-red-100 text-red-800"
-                              }
+                            }
                               
                               `}
                         >

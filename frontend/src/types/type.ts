@@ -62,6 +62,9 @@ export interface CartItem {
 export interface OrderItem {
   _id:string;
   product:BookDetails;
+  title:string;
+  subject:string;
+  author:string;
   quantity:number;
 }
 

@@ -113,15 +113,15 @@ const NewBooks = () => {
           {/* Scroll Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-sky-900 p-1 text-white font-bold rounded-full shadow-md"
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-5 w-8" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-sky-900 p-1 text-white font-bold rounded-full shadow-lg"
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-5 w-8" />
           </button>
           {/* Dots Navigation */}
           <div className="mt-8 flex justify-center space-x-2">
@@ -129,7 +129,7 @@ const NewBooks = () => {
               <button
                 key={dot}
                 onClick={() => setCurrentBookSlide(dot)}
-                className={`h-3 w-3 rounded-full ${
+                className={`h-1 w-8 rounded-full ${
                   currentBookSlide === dot ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               />

@@ -219,8 +219,8 @@ export default function SellBookPage() {
                       >
                         {filters.condition.map((condition) => (
                           <div key={condition} className="flex items-center space-x-2">
-                            <RadioGroupItem value={condition.toLowerCase()} id={condition.toLowerCase()} />
-                            <Label htmlFor={condition.toLowerCase()}>{condition}</Label>
+                            <RadioGroupItem value={String(condition).toLowerCase()} id={String(condition).toLowerCase()} />
+                            <Label htmlFor={String(condition).toLowerCase()}>{condition}</Label>
                           </div>
                         ))}
                       </RadioGroup>

@@ -326,7 +326,7 @@ export default function BooksPage() {
                 message="No books available please try later."
                 description="Try adjusting your filters or search criteria to find what you're looking for."
                 onClick={() => router.push("/book-sell")}
-                buttonText="Shell Your First Book"
+                buttonText="Sell Your First Book"
               />
             )}
           </div>

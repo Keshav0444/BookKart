@@ -17,7 +17,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white">
+                <Link href="/contact-us" className="hover:text-white">
                   Contact Us
                 </Link>
               </li>
@@ -34,7 +34,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/teleport" className="hover:text-white">
+                <Link href="/blogs" className="hover:text-white">
                   Blogs
                 </Link>
               </li>

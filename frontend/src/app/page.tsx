@@ -24,7 +24,7 @@ import { RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 
 const bannerImages = [
-  "/images/book1.jpg",
+  "/images/testbook1.png",
   "/images/book2.jpg",
   "/images/book3.jpg",
 ];
@@ -103,16 +103,16 @@ const buySteps = [
 
 export default function Homepage() {
   const [currentImage, setCurrentImage] = useState(0);
-    const user = useSelector((state: RootState) => state.user.user);
-   const router= useRouter()
+  const user = useSelector((state: RootState) => state.user.user);
+  const router = useRouter()
 
-    useEffect(() =>{
-      if(user && user.role !== "user"){
-        router.push('/admin')
-      }
-    },[user,router])
+  useEffect(() => {
+    if (user && user.role !== "user") {
+      router.push('/admin')
+    }
+  }, [user, router])
 
-    
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % bannerImages.length);
@@ -127,9 +127,8 @@ export default function Homepage() {
         {bannerImages.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              currentImage === index ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${currentImage === index ? "opacity-100" : "opacity-0"
+              }`}
           >
             <Image
               src={image}
@@ -210,10 +209,10 @@ export default function Homepage() {
             {sellSteps.map((step, index) => (
               <div key={index} className="relative flex flex-col h-full">
                 <div className="bg-white rounded-xl p-8 shadow-lg text-center flex-grow flex flex-col">
-                  <div className="absolute top-2 left-14 -translate-x-1/2 bg-yellow-400 text-gray-900  px-4 py-1 rounded-full text-sm font-medium z-10">
+                  <div className="absolute top-2 left-14 -translate-x-1/2 bg-sky-900 text-white  px-4 py-1 rounded-full text-sm font-medium z-10">
                     {step.step}
                   </div>
-                  <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-400 rounded-full flex items-center justify-center">
                     {step.icon}
                   </div>
                   <h3 className="font-semibold mb-2">{step.title}</h3>
@@ -244,15 +243,15 @@ export default function Homepage() {
             <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-0.5 border-t-2 border-dashed border-gray-300 -z-10" />
             {buySteps.map((step, index) => (
               <div key={index} className="relative flex flex-col h-full">
-                <div className="bg-yellow-400 rounded-xl p-8 shadow-lg text-center flex-grow flex flex-col">
+                <div className="bg-sky-900 rounded-xl p-8 shadow-lg text-center flex-grow flex flex-col">
                   <div className="absolute top-2 left-14 -translate-x-1/2 bg-primary bg-white text-gray-900 px-4 py-1 rounded-full text-sm font-medium">
                     {step.step}
                   </div>
-                  <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-400 rounded-full flex items-center justify-center">
                     {step.icon}
                   </div>
-                  <h3 className="font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-600 text-sm flex-grow">
+                  <h3 className="font-semibold mb-2 text-white">{step.title}</h3>
+                  <p className="text-gray-200 text-sm flex-grow">
                     {step.description}
                   </p>
                 </div>

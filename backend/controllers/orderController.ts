@@ -15,15 +15,15 @@ const razorpay = new Razorpay({
 export const createOrUpdateOrder = async (req: Request, res: Response) => {
   try {
     const userId = req?.id;
-    const {orderId, shippingAddress, paymentMethod, totalAmount, paymentDetails } = req.body;
+    const { orderId, shippingAddress, paymentMethod, totalAmount, paymentDetails } = req.body;
 
     const cart = await Cart.findOne({ user: userId }).populate('items.product');
     if (!cart || cart.items.length === 0) {
       return response(res, 400, 'Cart is empty');
     }
-     
+
     let order = await Order.findOne({ _id: orderId });
-    
+
     if (order) {
       // Update existing order
       order.shippingAddress = shippingAddress || order.shippingAddress;
@@ -68,11 +68,11 @@ export const createOrUpdateOrder = async (req: Request, res: Response) => {
 export const getOrderById = async (req: Request, res: Response) => {
   try {
     const order = await Order.findById(req.params.id)
-    .populate('user', 'name email').populate('shippingAddress')
-    .populate({
-      path: 'items.product',
-      model: 'Product', 
-    });
+      .populate('user', 'name email').populate('shippingAddress')
+      .populate({
+        path: 'items.product',
+        model: 'Product',
+      });
     if (!order) {
       return response(res, 404, 'Order not found');
     }
@@ -84,14 +84,14 @@ export const getOrderById = async (req: Request, res: Response) => {
 
 export const getUserOrders = async (req: Request, res: Response) => {
   try {
-    const userId = req?.id; 
+    const userId = req?.id;
     const orders = await Order.find({ user: userId }).sort({ createdAt: -1 })
       .populate('user', 'name email').populate('shippingAddress')
       .populate({
         path: 'items.product',
-        model: 'Product', 
+        model: 'Product',
       })
-      console.log(orders)
+    console.log(orders)
     response(res, 200, 'Orders fetched successfully', orders);
   } catch (error) {
     response(res, 500, 'Error fetching orders');
@@ -99,18 +99,26 @@ export const getUserOrders = async (req: Request, res: Response) => {
 };
 
 export const createPaymentWithRazorpay = async (req: Request, res: Response) => {
+  console.log("Entering createPaymentWithRazorpay");
+  console.log("Request body:", req.body);
   try {
     const { orderId } = req.body;
+    console.log("Looking for order with ID:", orderId);
+
     const order = await Order.findById(orderId);
     if (!order) {
+      console.log("Order not found");
       return response(res, 404, 'Order not found');
     }
-     
+    console.log("Order found:", order._id, "Total Amount:", order.totalAmount);
+
+    console.log("Creating Razorpay order with amount:", Math.round(order.totalAmount * 100));
     const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(order.totalAmount * 100), 
+      amount: Math.round(order.totalAmount * 100),
       currency: 'INR',
       receipt: order._id.toString(),
     });
+    console.log("Razorpay order created successfully:", razorpayOrder);
     response(res, 200, 'Razorpay order created', { order: razorpayOrder });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);

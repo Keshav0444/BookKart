@@ -113,12 +113,12 @@ const AboutUs = () => {
         {/* Images Section */}
         <div className="mt-16 flex flex-col md:flex-row gap-4 items-center mb-4">
           <img
-            src="/images/book1.jpg"
+            src="/images/testbook1.png"
             alt="Books"
             className="w-full md:w-[600px] rounded-lg shadow-md mb-4 md:mb-0"
           />
           <img
-            src="/images/book2.jpg"
+            src="/images/samplebook1.png"
             alt="Reading"
             className="w-full md:w-[600px] rounded-lg shadow-md"
           />

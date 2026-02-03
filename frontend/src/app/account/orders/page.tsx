@@ -31,16 +31,16 @@ export default function OrdersPage() {
   const displayedOrders = showAllOrders ? orders : orders.slice(0, 10);
   console.log(orders)
 
-  if (orders.length === 0 ) {
+  if (orders.length === 0) {
     return (
       <div className="my-10 max-w-3xl justify-center mx-auto">
-  <NoData
-  imageUrl="/images/no-book.jpg"
-  message="You haven't order any books yet."
-  description="Start order your books to reach potential buyers. order your first book now!"
-  onClick={() => router.push("/books")}
-  buttonText="Order First Book"
-/>
+        <NoData
+          imageUrl="/images/no-book.jpg"
+          message="You haven't order any books yet."
+          description="Start order your books to reach potential buyers. order your first book now!"
+          onClick={() => router.push("/books")}
+          buttonText="Order First Book"
+        />
       </div>
     );
   }
@@ -66,11 +66,26 @@ export default function OrdersPage() {
             </CardHeader>
             <CardContent className="flex-grow">
               <div className="space-y-2">
-              <p className="font-medium">{order.items.map(item => item.product.title).join(", ")}</p>
+                <p className="font-medium">{order.items.map(item => item.product.title).join(", ")}</p>
+                <p className="font-medium">
+                  {order.items
+                    .filter(item => item.product)
+                    .map(item => item.product.title)
+                    .join(", ") || "Product unavailable"}
+                </p>
                 <div className="text-sm flex gap-2 text-gray-600">
-                  <span>{order.items.map(item => item.product.subject).join(", ")}</span>
-                  <span>({order.items.map(item => item.product.author).join(", ")}) </span>
-             
+                  <span>
+                    {order.items
+                      .filter(item => item.product)
+                      .map(item => item.product.subject)
+                      .join(", ")}
+                  </span>
+                  <span>
+                    ({order.items
+                      .filter(item => item.product)
+                      .map(item => item.product.author)
+                      .join(", ")})
+                  </span>
                 </div>
                 <p className="text-sm flex items-center">
                   <CreditCard className="mr-2 h-4 w-4" />
@@ -79,15 +94,14 @@ export default function OrdersPage() {
                 <div className="flex items-center space-x-2">
                   <span className="text-sm">Status:</span>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      order.status === 'delivered'
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'delivered'
                         ? 'bg-green-100 text-green-800'
                         : order.status === 'processing'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : order.status === 'shipped'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : order.status === 'shipped'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
                   >
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>

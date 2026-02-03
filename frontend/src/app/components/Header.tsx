@@ -250,7 +250,7 @@ export default function Header() {
           <Link href="/book-sell">
             <Button
               variant="secondary"
-              className="bg-yellow-400 text-gray-900 hover:bg-yellow-500"
+              className="bg-red-500 text-white hover:bg-red-700"
             >
               Sell Used Books
             </Button>
