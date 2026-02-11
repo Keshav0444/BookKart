@@ -72,15 +72,15 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-8 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-zinc-600 via-gray-400 to-stone-800 text-white p-8 rounded-lg shadow-lg">
         <h1 className="text-4xl font-bold mb-2">My Profile</h1>
         <p className="text-pink-100">
           Manage your personal information and preferences
         </p>
       </div>
-      <Card className="border-t-4 border-t-pink-500 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-pink-50 to-rose-50">
-          <CardTitle className="text-2xl text-pink-700">Personal Information</CardTitle>
+      <Card className="border-t-4 border-t-sky-500 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-sky-50 to-blue-50">
+          <CardTitle className="text-2xl text-blue-700">Personal Information</CardTitle>
           <CardDescription>
             Update your profile details and contact information
           </CardDescription>
@@ -130,7 +130,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            <CardFooter className="bg-pink-50 mt-4 flex justify-between">
+            <CardFooter className="bg-blue-50 mt-4 flex justify-between">
               {isEditing ? (
                 <>
                   <Button
@@ -146,7 +146,7 @@ export default function ProfilePage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-gradient-to-r mt-4 from-pink-500 to-rose-500 text-white"
+                    className="bg-gradient-to-r mt-4 from-yellow-500 to-orange-500 text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Saving...' : 'Save Changes'}
@@ -156,7 +156,7 @@ export default function ProfilePage() {
                 <Button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="bg-gradient-to-r mt-4 from-pink-500 to-rose-500 text-white"
+                  className="bg-gradient-to-r mt-4 from-sky-500 to-blue-500 text-white"
                 >
                   Edit Profile
                 </Button>

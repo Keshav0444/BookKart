@@ -44,7 +44,7 @@ import { toggleLoginDialog } from '@/store/slices/userSlice'
 
 export default function SellBookPage() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [addProducts, {isLoading}] = useAddProductsMutation();
+  const [addProducts, { isLoading }] = useAddProductsMutation();
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
@@ -59,43 +59,43 @@ export default function SellBookPage() {
     formState: { errors },
   } = useForm<BookDetails>({
     defaultValues: {
-      images: [] 
+      images: []
     }
   });
-  
-      useEffect(() =>{
-        if(user && user.role !== "user"){
-          router.push('/admin')
-        }
-      },[user,router])
+
+  useEffect(() => {
+    if (user && user.role !== "user") {
+      router.push('/admin')
+    }
+  }, [user, router])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const newFiles = Array.from(files); 
+      const newFiles = Array.from(files);
       const currentFiles = watch('images') || [];
-  
+
       // Update the preview state with URLs for display
       setUploadedImages((prevImages) =>
         [...prevImages, ...newFiles.map((file) => URL.createObjectURL(file))].slice(0, 4)
       );
-  
+
       // Update the form state with actual File objects
       setValue('images', [...currentFiles, ...newFiles].slice(0, 4) as string[]);
     }
   };
-  
+
 
   const removeImage = (index: number) => {
     // Update the preview state
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-  
+
     // Update the form state
     const currentFiles = watch('images') || [];
     const updatedFiles = currentFiles.filter((_, i) => i !== index);
     setValue('images', updatedFiles);
   };
-  
+
   const onSubmit = async (data: BookDetails) => {
     try {
       const formData = new FormData();
@@ -109,16 +109,16 @@ export default function SellBookPage() {
       } else if (data.paymentMode === 'Bank Account') {
         formData.set('paymentDetails', JSON.stringify({ bankDetails: data.paymentDetails?.bankDetails }));
       }
-          
+
       if (Array.isArray(data.images) && data.images.length > 0) {
         data.images.forEach((image) => formData.append('images', image));
       } else {
         toast.error('please select images')
-        return 
+        return
       }
-      
+
       const result = await addProducts(formData).unwrap();
-      if(result.success){
+      if (result.success) {
         router.push(`books/${result.data._id}`)
         toast.success('Book listed successfully!');
         reset();
@@ -147,7 +147,7 @@ export default function SellBookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-slate-300 to-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-bold text-blue-600 mb-4">Sell Your Used Books</h1>
@@ -238,7 +238,7 @@ export default function SellBookPage() {
                     control={control}
                     rules={{ required: 'classType is required' }}
                     render={({ field }) => (
-                      <Select  onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Please select class" />
                         </SelectTrigger>
@@ -337,7 +337,7 @@ export default function SellBookPage() {
                           {...register('price', { required: 'mrp is required' })}
                           className="md:w-3/4"
                         />
-                    {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
+                        {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
                       </div>
 
                       <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
@@ -423,7 +423,7 @@ export default function SellBookPage() {
                             id="freeShipping"
                             checked={field.value === 'free'}
                             onCheckedChange={(checked) => {
-                              field.onChange(checked ? 'free' : ''); 
+                              field.onChange(checked ? 'free' : '');
                             }}
                           />
                         )}
@@ -440,14 +440,14 @@ export default function SellBookPage() {
           </Card>
 
           <Card className="shadow-lg border-t-4 border-t-blue-500">
-          <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-50">
+            <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-50">
               <CardTitle className="text-2xl text-yellow-600 flex items-center">
                 <CreditCard className="mr-2 h-6 w-6" />
-                 Bank Details
+                Bank Details
               </CardTitle>
             </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-          <div className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-4">
+            <CardContent className="space-y-6 pt-6">
+              <div className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-4">
                 <Label className="md:w-1/4 mt-2 font-medium text-gray-700">Payment Mode</Label>
                 <div className="space-y-2 md:w-3/4">
                   <p className="text-sm text-muted-foreground mb-2">After your book is sold, in what mode would you like to receive the payment?</p>
@@ -535,12 +535,12 @@ export default function SellBookPage() {
             </CardContent>
           </Card>
 
-          <Button type="submit"  disabled={isLoading} className="w-60 text-md bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-orange-600 hover:to-orange-700 font-semibold py-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
-                {isLoading ? 
-                <>
-                 <Loader2 className="animate-spin mr-2" size={20} /> 
-                 Saving...
-                </> : 'Post Your Book'}
+          <Button type="submit" disabled={isLoading} className="w-60 text-md bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-orange-600 hover:to-orange-700 font-semibold py-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+            {isLoading ?
+              <>
+                <Loader2 className="animate-spin mr-2" size={20} />
+                Saving...
+              </> : 'Post Your Book'}
           </Button>
 
           <p className="text-sm text-center text-gray-600">

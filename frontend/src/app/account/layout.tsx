@@ -28,25 +28,25 @@ const navigation = [
     title: "My Profile",
     href: "/account/profile",
     icon: User,
-    color: "from-pink-500 to-rose-500",
+    color: "from-slate-400 to-zinc-400",
   },
   {
     title: "My Orders",
     href: "/account/orders",
     icon: ShoppingCart,
-    color: "from-orange-500 to-amber-500",
+    color: "from-sky-500 to-indigo-600",
   },
   {
     title: "Selling Products",
     href: "/account/selling-products",
     icon: BookOpen,
-    color: "from-green-500 to-emerald-500",
+    color: "from-green-500 via-emerald-300 to-teal-500",
   },
   {
     title: "Wishlist",
     href: "/account/wishlist",
     icon: Heart,
-    color: "from-red-500 to-pink-500",
+    color: "from-red-500 via-rose-400 to-pink-500",
   },
 ];
 
@@ -103,7 +103,7 @@ export default function AccountLayout({
 
   return (
     <div className="grid  p-4 w-[90%] mx-auto lg:grid-cols-[370px_1fr]">
-      <div className="hidden border-r m-5 rounded-lg p-2  bg-gradient-to-b from-violet-500 to-purple-700 lg:block">
+      <div className="hidden border-r m-5 rounded-lg p-2  bg-gradient-to-b from-slate-500 to-zinc-700 lg:block">
         <div className="flex flex-col gap-2">
           <div className="flex h-[60px] items-center px-6">
             <Link
@@ -148,7 +148,7 @@ export default function AccountLayout({
                       className={`flex items-center gap-3 rounded-lg px-3 py-3 mb-2 transition-all ${
                         isActive
                           ? `bg-gradient-to-r ${item.color} text-white`
-                          : "text-purple-100 hover:bg-purple-600"
+                          : "text-purple-100 hover:bg-white hover:text-black"
                       }`}
                     >
                       <Icon className="h-4 w-4" />

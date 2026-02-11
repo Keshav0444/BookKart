@@ -105,17 +105,24 @@ const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getUserOrders = getUserOrders;
 const createPaymentWithRazorpay = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Entering createPaymentWithRazorpay");
+    console.log("Request body:", req.body);
     try {
         const { orderId } = req.body;
+        console.log("Looking for order with ID:", orderId);
         const order = yield ProductOrder_1.default.findById(orderId);
         if (!order) {
+            console.log("Order not found");
             return (0, responseHandler_1.response)(res, 404, 'Order not found');
         }
+        console.log("Order found:", order._id, "Total Amount:", order.totalAmount);
+        console.log("Creating Razorpay order with amount:", Math.round(order.totalAmount * 100));
         const razorpayOrder = yield razorpay.orders.create({
             amount: Math.round(order.totalAmount * 100),
             currency: 'INR',
             receipt: order._id.toString(),
         });
+        console.log("Razorpay order created successfully:", razorpayOrder);
         (0, responseHandler_1.response)(res, 200, 'Razorpay order created', { order: razorpayOrder });
     }
     catch (error) {

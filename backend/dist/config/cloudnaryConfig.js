@@ -9,9 +9,9 @@ const cloudinary_1 = require("cloudinary");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 cloudinary_1.v2.config({
-    cloud_name: process.env.CLOUDINART_NAME,
-    api_key: process.env.CLOUDINART_API_KEY,
-    api_secret: process.env.CLOUDINART_API_SECRET,
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 // Function to upload a single file to Cloudinary
 const uploadFileToCloudinary = (file) => {

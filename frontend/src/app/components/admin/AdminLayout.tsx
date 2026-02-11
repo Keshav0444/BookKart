@@ -67,7 +67,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       onClick: () => router.push("/admin"),
       href: "/admin",
       icon: LayoutDashboard,
-      bgColor: "from-purple-500 to-indigo-600",
+      bgColor: "from-green-400 to-emerald-400",
       textColor: "text-purple-600",
     },
     {
@@ -161,7 +161,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow overflow-y-auto">
-          <div className="flex h-16 items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-700 text-white">
+          <div className="flex h-16 items-center justify-center bg-gradient-to-r from-slate-600 via-gray-400 to-zinc-700 text-white">
             <h1 className="text-xl  font-bold">BookKart Admin</h1>
           </div>
 

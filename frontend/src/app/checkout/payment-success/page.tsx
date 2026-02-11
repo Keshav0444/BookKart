@@ -41,11 +41,11 @@ export default function ConfirmationPage() {
   const { totalAmount, items, status, createdAt } = orderData.data;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-300 via-zinc-500 to-stone-600 flex items-center justify-center p-4">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5 }} 
         className="w-full max-w-4xl"
       >
         <Card className="shadow-2xl bg-white bg-opacity-90 backdrop-blur-sm">

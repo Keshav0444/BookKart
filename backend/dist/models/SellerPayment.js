@@ -24,23 +24,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const orderItemSchema = new mongoose_1.Schema({
+const sellerPaymentSchema = new mongoose_1.Schema({
+    seller: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
+    order: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Order', required: true },
     product: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Product', required: true },
-    quantity: { type: Number, required: true },
-});
-const orderSchema = new mongoose_1.Schema({
-    user: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
-    items: [orderItemSchema],
-    totalAmount: { type: Number },
-    shippingAddress: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Address' },
-    paymentStatus: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
-    paymentMethod: { type: String },
-    paymentDetails: {
-        razorpay_order_id: { type: String },
-        razorpay_payment_id: { type: String },
-        razorpay_signature: { type: String },
-    },
-    status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' },
+    amount: { type: Number, required: true },
+    paymentMethod: { type: String, required: true },
+    status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+    processedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
     notes: { type: String },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model('Order', orderSchema);
+exports.default = mongoose_1.default.model("SellerPayment", sellerPaymentSchema);

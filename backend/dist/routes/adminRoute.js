@@ -22,25 +22,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const orderItemSchema = new mongoose_1.Schema({
-    product: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Product', required: true },
-    quantity: { type: Number, required: true },
-});
-const orderSchema = new mongoose_1.Schema({
-    user: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
-    items: [orderItemSchema],
-    totalAmount: { type: Number },
-    shippingAddress: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Address' },
-    paymentStatus: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
-    paymentMethod: { type: String },
-    paymentDetails: {
-        razorpay_order_id: { type: String },
-        razorpay_payment_id: { type: String },
-        razorpay_signature: { type: String },
-    },
-    status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' },
-    notes: { type: String },
-}, { timestamps: true });
-exports.default = mongoose_1.default.model('Order', orderSchema);
+const express_1 = __importDefault(require("express"));
+const adminController = __importStar(require("../controllers/adminController"));
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const adminMiddleware_1 = require("../middleware/adminMiddleware");
+const router = express_1.default.Router();
+router.get('/dashboard-stats', adminController.getDashboardStats);
+//Apply both middleware to all admin route
+router.use(authMiddleware_1.authenticateUser, adminMiddleware_1.isAdmin);
+//other maganemnt route
+router.get('/orders', adminController.getAllOrders);
+router.put('/orders/:id', adminController.updateOrder);
+//seller payment managemnet route
+router.post('/process-seller-payment/:orderId', adminController.processSellerPayment);
+router.get('/seller-payments', adminController.getSellerPayment);
+exports.default = router;

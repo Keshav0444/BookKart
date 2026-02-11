@@ -87,9 +87,9 @@ export default function SellerProductsPage() {
                 <Image
               src={product?.images?.[0]}
               alt={product?.title || "Product Image"}
-              width={80}
-              height={100}
-              className="object-contain w-60  rounded-xl"
+              width={800}
+              height={800}
+              className="ml-40 object-contain w-60  rounded-xl"
             />
                 </div>
                 <div className="space-y-2">

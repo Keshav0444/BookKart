@@ -47,7 +47,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-8 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-sky-500 via-blue-300 to-indigo-600 text-white p-8 rounded-lg shadow-lg">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">My Orders</h1>
         <p className="text-purple-100">View and manage your recent purchases</p>
       </div>

@@ -247,7 +247,7 @@ export default function BooksPage() {
                                 alt={book.title}
                                 width={400}
                                 height={300}
-                                className="h-[250px] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                className="h-[250px] w-full object-contain transition-transform duration-300 group-hover:scale-105"
                               />
                         
                               <div className="absolute left-0 top-0 z-10 flex flex-col gap-2 p-3">

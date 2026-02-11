@@ -13,6 +13,7 @@ const wishListRoute_1 = __importDefault(require("./routes/wishListRoute"));
 const orderRoute_1 = __importDefault(require("./routes/orderRoute"));
 const addressRoute_1 = __importDefault(require("./routes/addressRoute"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
+const adminRoute_1 = __importDefault(require("./routes/adminRoute"));
 const dbConfig_1 = __importDefault(require("./config/dbConfig"));
 const google_strategy_1 = __importDefault(require("./controllers/strategy/google.strategy"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -37,6 +38,7 @@ app.use('/api/wishlist', wishListRoute_1.default);
 app.use('/api/orders', orderRoute_1.default);
 app.use('/api/address', addressRoute_1.default);
 app.use('/api/users', userRoute_1.default);
+app.use('/api/admin', adminRoute_1.default);
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

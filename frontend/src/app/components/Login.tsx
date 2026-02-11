@@ -108,7 +108,7 @@ const Login: React.FC<LoginProps> = ({ isLoginOpen, setIsLoginOpen }) => {
       const result = await register({ email, password, name }).unwrap();
       console.log(result);
       if (result.success) {
-        toast.success("varification link send to email successfully");
+        toast.success("verification link send to email successfully");
         setSignupLoading(false);
         dispatch(toggleLoginDialog());
       }

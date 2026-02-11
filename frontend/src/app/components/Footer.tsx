@@ -5,7 +5,7 @@ import { Shield, Clock, HeadphonesIcon } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-gradient-to-r from-slate-800 via-gray-700 to-zinc-800 text-gray-300">
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-12 md:grid-cols-4">
           <div>
@@ -91,7 +91,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Secure Payment</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-400">
                     100% Secure Online Transaction
                   </p>
                 </div>
@@ -102,7 +102,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="font-semibold">BookKart Trust</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-400">
                     Money transferred safely after confirmation
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Customer Support</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-400">
                     Friendly customer support
                   </p>
                 </div>

@@ -74,7 +74,7 @@ const NewBooks = () => {
                                 alt={book.title}
                                 width={200}
                                 height={300}
-                                className="mb-4 h-[200px] w-full object-cover rounded-md"
+                                className="mb-4 h-[200px] w-full object-contain rounded-md"
                               />
                               {calculateDiscount(book.price, book.finalPrice) > 0 && (
                                 <span className="absolute left-0 top-2 rounded-r-lg bg-red-500 px-2 py-1 text-xs font-medium text-white">
