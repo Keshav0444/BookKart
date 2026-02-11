@@ -17,32 +17,21 @@ dotenv.config();
 const app = express();
 
 // Middleware
-const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "https://book-kart-one.vercel.app"
-    ];
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://book-kart-1i424laom-keshavs-projects-08611a44.vercel.app'
+];
 
-    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS policy violation'), false);
     }
-
-    // Check if origin matches Vercel preview pattern
-    if (/^https:\/\/book-kart-.*\.vercel\.app$/.test(origin)) {
-      return callback(null, true);
-    }
-
-    // Reject other origins
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-}
-app.use(cors(corsOptions));
+    return callback(null, true);
+  }
+}));
 app.use(express.json());
 app.use(passport.initialize())
 app.use(cookieParser());
