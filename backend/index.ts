@@ -18,7 +18,7 @@ const app = express();
 
 // Middleware
 const corsOptions = {
-  origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://book-kart-one.vercel.app"],
+  origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://book-kart-one.vercel.app", /^https:\/\/book-kart-.*\.vercel\.app$/],
   credentials: true,
 }
 app.use(cors(corsOptions));
