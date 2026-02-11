@@ -15,9 +15,10 @@ export const editUserProfile = async (req: Request, res: Response) => {
     if (!userId) {
       return response(res, 400, "User ID is required.");
     }
-     console.log('this is userId',userId)
+    console.log('this is userId', userId)
     const { name, email, phoneNumber } = req.body;
-    console.log('this is req.body',req.body)
+    console.log('this is req.body', req.body)
+
     // Find the user by ID and update the profile fields
     const updatedUser = await User.findByIdAndUpdate(
       userId,

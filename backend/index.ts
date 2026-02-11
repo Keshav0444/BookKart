@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import  cors from 'cors';
+import cors from 'cors';
 import authRoutes from './routes/authRoute';
 import productRoutes from './routes/productRoute';
 import cartRoutes from './routes/cartRoute';
@@ -18,8 +18,8 @@ const app = express();
 
 // Middleware
 const corsOptions = {
-    origin:process.env.FRONTEND_URL,
-    credentials: true,
+  origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://book-kart-one.vercel.app"],
+  credentials: true,
 }
 app.use(cors(corsOptions));
 app.use(express.json());
