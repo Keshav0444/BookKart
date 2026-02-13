@@ -44,7 +44,6 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
             profilePicture: (_d = photos === null || photos === void 0 ? void 0 : photos[0]) === null || _d === void 0 ? void 0 : _d.value,
             isVerified: true,
             agreeTerms: true,
-            role: 'user'
         });
         done(null, user);
     }

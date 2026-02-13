@@ -41,6 +41,5 @@ const orderSchema = new mongoose_1.Schema({
         razorpay_signature: { type: String },
     },
     status: { type: String, enum: ['processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' },
-    notes: { type: String },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('Order', orderSchema);

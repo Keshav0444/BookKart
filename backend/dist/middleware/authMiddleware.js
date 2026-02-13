@@ -26,7 +26,6 @@ const authenticateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             return (0, responseHandler_1.response)(res, 401, 'Not authorized, user not found');
         }
         req.id = decoded.userId;
-        req.role = decoded.role;
         next();
     }
     catch (error) {

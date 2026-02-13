@@ -6,9 +6,9 @@ import { RequestHandler } from 'express';
 dotenv.config();
 
 cloudinary.config({
-   cloud_name: process.env.CLOUDINARY_NAME as string,
-    api_key: process.env.CLOUDINARY_API_KEY as string,
-    api_secret: process.env.CLOUDINARY_API_SECRET as string,
+    cloud_name: process.env.CLOUDINART_NAME as string,
+    api_key: process.env.CLOUDINART_API_KEY as string,
+    api_secret: process.env.CLOUDINART_API_SECRET as string,
 });
 
 // Custom interface for file with path

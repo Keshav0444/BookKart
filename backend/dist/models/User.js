@@ -50,7 +50,6 @@ const userSchema = new mongoose_1.Schema({
     addresses: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Address' }],
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
-    role: { type: String, enum: ["user", "admin"], default: 'user' },
 }, { timestamps: true });
 userSchema.pre('save', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
