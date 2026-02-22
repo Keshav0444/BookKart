@@ -19,7 +19,8 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'http://book-kart-teal.vercel.app',
+  'https://book-kart-teal.vercel.app',
+  'http://localhost:3000',
 ].filter(Boolean) as string[];
 
 const corsOptions = {
