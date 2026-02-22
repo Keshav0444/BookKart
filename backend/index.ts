@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import  cors from 'cors';
+import cors from 'cors';
 import authRoutes from './routes/authRoute';
 import productRoutes from './routes/productRoute';
 import cartRoutes from './routes/cartRoute';
@@ -17,10 +17,22 @@ dotenv.config();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+].filter(Boolean) as string[];
+
 const corsOptions = {
-    origin:process.env.FRONTEND_URL,
-    credentials: true,
-}
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
+  credentials: true,
+};
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(passport.initialize())
