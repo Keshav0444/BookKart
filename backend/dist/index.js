@@ -13,14 +13,27 @@ const wishListRoute_1 = __importDefault(require("./routes/wishListRoute"));
 const orderRoute_1 = __importDefault(require("./routes/orderRoute"));
 const addressRoute_1 = __importDefault(require("./routes/addressRoute"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
+const adminRoute_1 = __importDefault(require("./routes/adminRoute"));
 const dbConfig_1 = __importDefault(require("./config/dbConfig"));
 const google_strategy_1 = __importDefault(require("./controllers/strategy/google.strategy"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Middleware
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://book-kart-teal.vercel.app',
+].filter(Boolean);
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error(`CORS: origin ${origin} not allowed`));
+        }
+    },
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
@@ -37,6 +50,7 @@ app.use('/api/wishlist', wishListRoute_1.default);
 app.use('/api/orders', orderRoute_1.default);
 app.use('/api/address', addressRoute_1.default);
 app.use('/api/users', userRoute_1.default);
+app.use('/api/admin', adminRoute_1.default);
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

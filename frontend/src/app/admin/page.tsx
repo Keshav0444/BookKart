@@ -52,7 +52,7 @@ const page = () => {
     );
   }
 
-  if (isError) {
+  if (isError || !stats) {
     return (
       <AdminLayout>
         <div className="text-center py-10">
