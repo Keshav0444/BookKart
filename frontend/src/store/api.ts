@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://bookkart-ug7b.onrender.com/api';
 
 const API_URLS = {
   // User related URLs
@@ -12,24 +12,24 @@ const API_URLS = {
   RESET_PASSWORD: (token: string) => `${BASE_URL}/auth/reset-password/${token}`,
   VERIFY_AUTH: `${BASE_URL}/auth/verify-auth`,
   LOGOUT: `${BASE_URL}/auth/logout`,
-  UPDATE_USER_PROFILE:(userId:string) => `${BASE_URL}/users/profile/update/${userId}`,
-  
+  UPDATE_USER_PROFILE: (userId: string) => `${BASE_URL}/users/profile/update/${userId}`,
+
   // Product related URLs
   PRODUCTS: `${BASE_URL}/products`,
   PRODUCT_BY_ID: (id: string) => `${BASE_URL}/products/${id}`,
-  GET_PRODUCT_BY_SELLERID : (sellerId:string) => `${BASE_URL}/products/seller/${sellerId}`,
-  DELETE_PRODUCT_BY_PRODUCTID : (productId:string) => `${BASE_URL}/products/seller/${productId}`,
-  
+  GET_PRODUCT_BY_SELLERID: (sellerId: string) => `${BASE_URL}/products/seller/${sellerId}`,
+  DELETE_PRODUCT_BY_PRODUCTID: (productId: string) => `${BASE_URL}/products/seller/${productId}`,
+
   // Cart related URLs
-  CART:(userId: string) => `${BASE_URL}/cart/${userId}`,
+  CART: (userId: string) => `${BASE_URL}/cart/${userId}`,
   ADD_TO_CART: `${BASE_URL}/cart/add`,
   REMOVE_FROM_CART: (productId: string) => `${BASE_URL}/cart/remove/${productId}`,
-  
+
   // Wishlist related URLs
   WISHLIST: `${BASE_URL}/wishlist`,
   ADD_TO_WISHLIST: `${BASE_URL}/wishlist/add`,
   REMOVE_FROM_WISHLIST: (productId: string) => `${BASE_URL}/wishlist/remove/${productId}`,
-  
+
   // Order related URLs
   ORDERS: `${BASE_URL}/orders`,
   ORDER_BY_ID: (orderId: string) => `${BASE_URL}/orders/${orderId}`,
@@ -37,16 +37,16 @@ const API_URLS = {
 
 
   //address related URLs
-    GET_ADDRESS: `${BASE_URL}/address`,
-    ADD_OR_UPDATE_ADDRESS: `${BASE_URL}/address/create-or-update`,
+  GET_ADDRESS: `${BASE_URL}/address`,
+  ADD_OR_UPDATE_ADDRESS: `${BASE_URL}/address/create-or-update`,
 };
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ 
+  baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
-    credentials: 'include', 
+    credentials: 'include',
   }),
-  tagTypes: ['User', 'Product', 'Cart', 'Wishlist', 'Order','Address'],
+  tagTypes: ['User', 'Product', 'Cart', 'Wishlist', 'Order', 'Address'],
   endpoints: (builder) => ({
     // User endpoints
     register: builder.mutation({
@@ -101,7 +101,7 @@ export const api = createApi({
         method: 'PUT',
         body: userData,
       }),
-    }),    
+    }),
 
     // Product endpoints
     addProducts: builder.mutation({
@@ -202,7 +202,7 @@ export const api = createApi({
 
 
     getAddresses: builder.query<any[], void>({
-      query: () =>API_URLS.GET_ADDRESS,
+      query: () => API_URLS.GET_ADDRESS,
       providesTags: ['Address'],
     }),
     addOrUpdateAddress: builder.mutation<any, any>({
@@ -241,7 +241,7 @@ export const {
   useGetOrderByIdQuery,
   useCreateOrUpdateOrderMutation,
   useCreateRazorpayPaymentMutation,
-   useAddOrUpdateAddressMutation,
+  useAddOrUpdateAddressMutation,
   useGetAddressesQuery,
 } = api;
 
