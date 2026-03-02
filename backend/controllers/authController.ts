@@ -18,13 +18,10 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({ name, email, password, agreeTerms, verificationToken, role: role || 'user' });
     await user.save();
 
-    try {
-      const result = await sendVerificationEmail(user.email, verificationToken);
-      console.log(result);
-    } catch (emailError) {
+    const emailSent = await sendVerificationEmail(user.email, verificationToken);
+    if (!emailSent) {
       // Rollback user creation if email fails so they can retry
       await User.deleteOne({ _id: user._id });
-      console.error('Email sending failed:', emailError);
       return response(res, 500, 'Registration failed: could not send verification email. Please try again.');
     }
 
