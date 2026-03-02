@@ -75,7 +75,7 @@ export interface PaymentDetails{
   razorpay_signature:string,
 }
 
-export interface Order {
+export interface Order{
   _id:string;
   user:UserData;
   items:OrderItem[],

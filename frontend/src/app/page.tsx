@@ -32,7 +32,7 @@ const bannerImages = [
 const blogPosts = [
   {
     imageSrc:
-      "https://images.unsplash.com/photo-1604866830893-c13cafa515d5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8b25saW5lJTIwc2VsbCUyMGJvb2tzfGVufDB8fDB8fHww",
+      "/images/where.png",
     title: "Where and how to sell old books online?",
     description:
       "Get started with selling your used books online and earn money from your old books.",
@@ -40,7 +40,7 @@ const blogPosts = [
   },
   {
     imageSrc:
-      "https://media.istockphoto.com/id/910384920/photo/kid-reading-near-locked-door.webp?a=1&b=1&s=612x612&w=0&k=20&c=J3FL4ZVORItw_bkLzlVo4WO-xUy22S7Qqbuq2xusNnc=",
+      "/images/donate.png",
     title: "What to do with old books?",
     description:
       "Learn about different ways to make use of your old books and get value from them.",
@@ -48,7 +48,7 @@ const blogPosts = [
   },
   {
     imageSrc:
-      "https://images.unsplash.com/photo-1492539438225-2666b2a98f93?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG9sZCUyMCUyMGJvb2tzfGVufDB8fDB8fHww",
+      "/images/real.png",
     title: "What is BookKart?",
     description:
       "Discover how BookKart helps you buy and sell used books online easily.",

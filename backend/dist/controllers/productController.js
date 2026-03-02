@@ -36,6 +36,7 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 !parsedPaymentDetails.bankDetails.bankName)) {
             return (0, responseHandler_1.response)(res, 400, 'Complete bank details are required for Bank Account payment mode.');
         }
+        
         // Upload each file to Cloudinary and store the resulting URLs
         const uploadPromises = images.map(file => (0, cloudnaryConfig_1.uploadFileToCloudinary)(file));
         const uploadedImages = yield Promise.all(uploadPromises);
