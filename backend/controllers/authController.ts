@@ -3,11 +3,11 @@ import User, { IUser } from '../models/User';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../config/emailConfig';
 import { response } from '../utils/responseHandler';
-import { generateToken } from '../utils/generateToken'; 
+import { generateToken } from '../utils/generateToken';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password,agreeTerms } = req.body;
+    const { name, email, password, agreeTerms, role } = req.body;
     const existingUser = await User.findOne({ email });
     console.log(existingUser)
     if (existingUser) {
@@ -15,13 +15,20 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const verificationToken = crypto.randomBytes(20).toString('hex');
-    const user = new User({ name, email, password,agreeTerms, verificationToken });
+    const user = new User({ name, email, password, agreeTerms, verificationToken, role: role || 'user' });
     await user.save();
 
-   const result= await sendVerificationEmail(user.email, verificationToken);
-   console.log(result);
+    try {
+      const result = await sendVerificationEmail(user.email, verificationToken);
+      console.log(result);
+    } catch (emailError) {
+      // Rollback user creation if email fails so they can retry
+      await User.deleteOne({ _id: user._id });
+      console.error('Email sending failed:', emailError);
+      return response(res, 500, 'Registration failed: could not send verification email. Please try again.');
+    }
 
-   return response(res, 201, 'Registration successful. Please check your email to verify your account.');
+    return response(res, 201, 'Registration successful. Please check your email to verify your account.');
   } catch (error) {
     console.log(error);
     return response(res, 500, 'An error occurred during registration. Please try again.');
@@ -42,16 +49,16 @@ export const verifyEmail = async (req: Request, res: Response) => {
     const accessToken = generateToken(user);
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      sameSite:"none",
-      secure:true,
-      maxAge:24*60*60*1000
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
     });
-    
+
     await user.save();
 
-    return  response(res, 200, 'Email verified successfully. You can now log in to your account.');
+    return response(res, 200, 'Email verified successfully. You can now log in to your account.');
   } catch (error) {
-    return  response(res, 500, 'An error occurred while verifying your email. Please try again.');
+    return response(res, 500, 'An error occurred while verifying your email. Please try again.');
   }
 };
 
@@ -71,14 +78,14 @@ export const login = async (req: Request, res: Response) => {
     // Set the token in the cookie
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      sameSite:"none",
-      secure:true,
-      maxAge:24*60*60*1000
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
     });
-    
-    return response(res, 200, 'Login successful', {  user: { id: user._id, name: user.name, email: user.email } });
+
+    return response(res, 200, 'Login successful', { user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
-    return  response(res, 500, 'An error occurred during login. Please try again.');
+    return response(res, 500, 'An error occurred during login. Please try again.');
   }
 };
 
@@ -88,7 +95,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
     console.log(email);
     const user = await User.findOne({ email });
-    console.log('this is user',user)
+    console.log('this is user', user)
     if (!user) {
       return response(res, 404, 'No account found with this email address');
     }
@@ -111,7 +118,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
 
     const { token } = req.params;
-    const {  newPassword } = req.body;
+    const { newPassword } = req.body;
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() },
@@ -126,7 +133,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.resetPasswordExpires = undefined;
     await user.save();
 
-   return response(res, 200, 'Your password has been successfully reset. You can now log in with your new password.');
+    return response(res, 200, 'Your password has been successfully reset. You can now log in with your new password.');
   } catch (error) {
     return response(res, 500, 'An error occurred while resetting your password. Please try again.');
   }
@@ -138,8 +145,8 @@ export const logout = async (_: Request, res: Response) => {
     // Clear the access token cookie
     res.clearCookie("access_token", {
       httpOnly: true,
-      sameSite:"none",
-      secure:true,
+      sameSite: "none",
+      secure: true,
     });
     return response(res, 200, "Successfully logged out.");
   } catch (error) {
@@ -149,9 +156,9 @@ export const logout = async (_: Request, res: Response) => {
 };
 
 
-export const checkUserAuth = async (req: Request, res: Response) =>{
+export const checkUserAuth = async (req: Request, res: Response) => {
   try {
-    const userId = req?.id; 
+    const userId = req?.id;
     if (!userId) {
       return response(res, 400, 'Unauthenticated! Please login before accessing the data');
     }

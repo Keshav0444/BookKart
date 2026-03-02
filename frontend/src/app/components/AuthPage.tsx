@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,     
+  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ isLoginOpen, setIsLoginOpen }) => {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const dispatch = useDispatch();
 
-  const BASE_URL = "http://localhost:8000/api";
+  const BASE_URL = "https://bookkart-ug7b.onrender.com/api";
 
   const [login] = useLoginMutation();
   const [register] = useRegisterMutation();
