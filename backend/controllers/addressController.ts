@@ -1,15 +1,27 @@
 import { Request, Response } from 'express';
-import Address from '../models/Address'; // Import the Address model
+import Address from '../models/Address';
 import { response } from '../utils/responseHandler';
 import User from '../models/User';
+import { cacheGet, cacheSet, cacheDel } from '../utils/cache';
+
+const ADDRESS_KEY = (userId: string) => `address:${userId}`;
+const ADDRESS_TTL = 300; // 5 minutes
 
 // Function to get address by userId
 export const getAddressByUserId = async (req: Request, res: Response) => {
   try {
-    const userId = req?.id; 
+    const userId = req?.id;
 
     if (!userId) {
       return response(res, 400, 'User not found');
+    }
+
+    const key = ADDRESS_KEY(userId);
+
+    // Try cache first
+    const cached = await cacheGet<any>(key);
+    if (cached) {
+      return response(res, 200, 'Address fetched successfully', cached);
     }
 
     // Find the address by userId
@@ -18,6 +30,7 @@ export const getAddressByUserId = async (req: Request, res: Response) => {
       return response(res, 404, 'Address not found');
     }
 
+    await cacheSet(key, address, ADDRESS_TTL);
     return response(res, 200, 'Address fetched successfully', address);
   } catch (error) {
     console.error(error);
@@ -27,7 +40,7 @@ export const getAddressByUserId = async (req: Request, res: Response) => {
 
 export const createOrUpdateAddressByUserId = async (req: Request, res: Response) => {
   try {
-    const userId = req?.id; 
+    const userId = req?.id;
     const { phoneNumber, addressLine1, addressLine2, city, state, pincode, addressId } = req.body;
     console.log(req.body);
 
@@ -58,6 +71,9 @@ export const createOrUpdateAddressByUserId = async (req: Request, res: Response)
       // Save the updated address
       await existingAddress.save();
 
+      // Invalidate address cache
+      await cacheDel(ADDRESS_KEY(userId));
+
       return response(res, 200, 'Address updated successfully', existingAddress);
     } else {
       // Create a new address if no addressId is provided
@@ -81,6 +97,9 @@ export const createOrUpdateAddressByUserId = async (req: Request, res: Response)
         { new: true }
       );
 
+      // Invalidate address cache
+      await cacheDel(ADDRESS_KEY(userId));
+
       return response(res, 201, 'Address added successfully', newAddress);
     }
   } catch (error) {
@@ -88,7 +107,3 @@ export const createOrUpdateAddressByUserId = async (req: Request, res: Response)
     return response(res, 500, 'Error creating or updating address');
   }
 };
-
-
-
-

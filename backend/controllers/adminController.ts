@@ -1,262 +1,296 @@
 import { Request, Response } from "express";
 import SellerPayment from "../models/SellerPayment";
 import ProductOrder from "../models/ProductOrder";
-import {response} from '../utils/responseHandler'
-import items from "razorpay/dist/types/items";
+import { response } from '../utils/responseHandler'
 import User from "../models/User";
 import Products from "../models/Products";
+import { cacheGet, cacheSet, cacheDel, cacheDelByPrefix } from "../utils/cache";
 
-export const getAllOrders = async(req:Request,res:Response) => {
-      try {
-          const {status,paymentStatus,startDate,endDate} = req.query;
+const DASHBOARD_KEY = 'admin:dashboard';
+const ADMIN_ORDERS_KEY = 'admin:orders';
+const ADMIN_SELLER_PAYMENTS_KEY = 'admin:seller-payments';
+const ADMIN_TTL = 60; // 1 minute — admin data changes frequently
 
-          const paidOrderRecord = await SellerPayment.find().select('order');
-          const paidOrderIds = paidOrderRecord.map((record) => record.order.toString());
+export const getAllOrders = async (req: Request, res: Response) => {
+    try {
+        const { status, paymentStatus, startDate, endDate } = req.query;
 
-          const query : any= {
-            paymentStatus:"completed",
-            _id: {$nin: paidOrderIds}
-          }
+        // Build a stable cache key from query params
+        const cacheKey = `${ADMIN_ORDERS_KEY}:${status || ''}:${paymentStatus || ''}:${startDate || ''}:${endDate || ''}`;
 
-          if(status){
-            query.status= status
-          }
-          query.paymentStatus = paymentStatus || "completed"
+        const cached = await cacheGet<any>(cacheKey);
+        if (cached) {
+            return response(res, 200, "order fetched successfully", { orders: cached });
+        }
 
-          if(startDate && endDate){
+        const paidOrderRecord = await SellerPayment.find().select('order');
+        const paidOrderIds = paidOrderRecord.map((record) => record.order.toString());
+
+        const query: any = {
+            paymentStatus: "completed",
+            _id: { $nin: paidOrderIds }
+        }
+
+        if (status) {
+            query.status = status
+        }
+        query.paymentStatus = paymentStatus || "completed"
+
+        if (startDate && endDate) {
             query.createdAt = {
                 $gte: new Date(startDate as string),
                 $lte: new Date(endDate as string)
             }
-          }
+        }
 
+        const orders = await ProductOrder.find(query)
+            .populate({
+                path: "items.product",
+                populate: {
+                    path: 'seller',
+                    select: "name email phoneNumber paymentMode paymentDetails"
+                }
+            })
+            .populate("user", "name email")
+            .populate("shippingAddress")
+            .sort({ createdAt: -1 })
 
-          const orders = await ProductOrder.find(query)
-          .populate({
-            path:"items.product",
-            populate:{
-                path:'seller',
-                select:"name email phoneNumber paymentMode paymentDetails"
-            }
-          })
-          .populate("user", "name email")
-          .populate("shippingAddress")
-          .sort({createdAt: -1})
+        await cacheSet(cacheKey, orders, ADMIN_TTL);
+        return response(res, 200, "order fetched successfully", { orders })
 
-          return response(res,200,"order fetched successfully",{orders})
-
-
-      } catch (error) {
-         console.error('Error fetching orders:', error)
-       return response(res,500, 'Internal server error');
-      }
+    } catch (error) {
+        console.error('Error fetching orders:', error)
+        return response(res, 500, 'Internal server error');
+    }
 }
 
 
 //update order
-export const updateOrder = async (req:Request,res:Response) =>{
+export const updateOrder = async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
-        const {status,paymentStatus,notes}= req.body;
+        const { id } = req.params;
+        const { status, paymentStatus, notes } = req.body;
         const order = await ProductOrder.findById(id);
 
-        if(!order) {
-            return response(res,404,'Order not found')
+        if (!order) {
+            return response(res, 404, 'Order not found')
         }
-        if(status) order.status = status;
-        if(paymentStatus) order.paymentStatus= paymentStatus;
-         if(notes) order.notes = notes;
-
+        if (status) order.status = status;
+        if (paymentStatus) order.paymentStatus = paymentStatus;
+        if (notes) order.notes = notes;
 
         await order.save();
 
-        return response(res,200, "Orderupdate successfully",order)
+        // Invalidate admin orders, dashboard, and specific order caches
+        await Promise.all([
+            cacheDelByPrefix(ADMIN_ORDERS_KEY),
+            cacheDel(DASHBOARD_KEY),
+            cacheDel(`orders:${id}`),
+            cacheDelByPrefix('orders:user:'),
+        ]);
+
+        return response(res, 200, "Orderupdate successfully", order)
 
     } catch (error) {
         console.error('Error updating order:', error)
-        return response(res,500, 'Internal server error');
+        return response(res, 500, 'Internal server error');
     }
 }
 
 
-export const processSellerPayment = async (req:Request,res:Response) =>{
+export const processSellerPayment = async (req: Request, res: Response) => {
     try {
-         const {orderId} = req.params;
-         const {productId, paymentMethod,amount,notes} = req.body;
-         const user = req.id;
+        const { orderId } = req.params;
+        const { productId, paymentMethod, amount, notes } = req.body;
+        const user = req.id;
 
+        if (!productId || !paymentMethod || !amount) {
+            return response(res, 400, "Missing required fields: productdId, payemtmethod, amount")
+        }
 
-         if(!productId || !paymentMethod || !amount){
-            return response(res,400,"Missing required fields: productdId, payemtmethod, amount")
-         }
-
-         const order = await ProductOrder.findById(orderId).populate({
-            path:"items.product",
-            populate:{
-                path:"seller",
+        const order = await ProductOrder.findById(orderId).populate({
+            path: "items.product",
+            populate: {
+                path: "seller",
             }
-         })
+        })
 
-         if(!order){
-            return response(res,404,'Order not found')
-         }
+        if (!order) {
+            return response(res, 404, 'Order not found')
+        }
 
+        //find the specific product in the order;
+        const orderItem = order.items.find((item) => (item.product)._id.toString() === productId);
+        if (!orderItem) {
+            return response(res, 404, "Product not found in this order")
+        }
 
-         //find the specific product in the order;
+        const sellerPayment = new SellerPayment({
+            seller: (orderItem.product as any).seller._id,
+            order: orderId,
+            product: productId,
+            amount,
+            paymentMethod,
+            status: 'completed',
+            processedBy: user,
+            notes
+        })
+        await sellerPayment.save();
 
-         const orderItem = order.items.find((item) => (item.product)._id.toString() === productId);
-         if(!orderItem) {
-            return response(res,404, "Product not found in this order")
-         }
+        // Invalidate seller payments and dashboard caches
+        await Promise.all([
+            cacheDelByPrefix(ADMIN_SELLER_PAYMENTS_KEY),
+            cacheDel(DASHBOARD_KEY),
+        ]);
 
-         const sellerPayment = new SellerPayment({
-              seller :(orderItem.product as any).seller._id,
-              order:orderId,
-              product:productId,
-              amount,
-              paymentMethod,
-              status:'completed',
-              processedBy:user,
-              notes
-         })
-         await sellerPayment.save();
-         return response(res,200,"Payment to seller processed successfully", sellerPayment);
+        return response(res, 200, "Payment to seller processed successfully", sellerPayment);
     } catch (error) {
         console.error('Error processed seller payment:', error)
-        return response(res,500, 'Internal server error');
+        return response(res, 500, 'Internal server error');
     }
 }
 
-export const getDashboardStats = async(req:Request,res:Response) =>{
+export const getDashboardStats = async (req: Request, res: Response) => {
     try {
-          const [totalOrders, totalUsers, totalProducts,statusCounts,recentOrders,revenue,monthlySales] =
-          await  Promise.all([
-            //Get Count 
-            ProductOrder.countDocuments().lean(),
-            User.countDocuments().lean(),
-            Products.countDocuments().lean(),
+        // Try cache first
+        const cached = await cacheGet<any>(DASHBOARD_KEY);
+        if (cached) {
+            return response(res, 200, "Dashboard statistics fetched successfully", cached);
+        }
 
-            //Get order by status in single query
-            ProductOrder.aggregate([
-                {
-                    $group:{
-                        _id:"$status",
-                        count:{$sum : 1}
+        const [totalOrders, totalUsers, totalProducts, statusCounts, recentOrders, revenue, monthlySales] =
+            await Promise.all([
+                //Get Count 
+                ProductOrder.countDocuments().lean(),
+                User.countDocuments().lean(),
+                Products.countDocuments().lean(),
+
+                //Get order by status in single query
+                ProductOrder.aggregate([
+                    {
+                        $group: {
+                            _id: "$status",
+                            count: { $sum: 1 }
+                        }
                     }
-                }
-            ]),
+                ]),
 
-            //Get recent order
-            ProductOrder.find()
-            .select("user totalAmount status createdAt")
-            .populate("user", "name")
-            .sort({createdAt: -1})
-            .limit(5)
-            .lean(),
+                //Get recent order
+                ProductOrder.find()
+                    .select("user totalAmount status createdAt")
+                    .populate("user", "name")
+                    .sort({ createdAt: -1 })
+                    .limit(5)
+                    .lean(),
 
+                //calculate revenue
+                ProductOrder.aggregate([
+                    { $match: { paymentStatus: "completed" } },
+                    { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+                ]),
 
-            //calculate revenue
-
-            ProductOrder.aggregate([
-                {$match : {paymentStatus: "completed"}},
-                {$group: {_id: null, total: {$sum: "$totalAmount"}}}
-            ]),
-
-            //Get monthly sales data for chart
-            ProductOrder.aggregate([
-                {$match : {paymentStatus: "completed"}},
-                {
-                    $group:{
-                        _id:{
-                             month:{$month: "$createdAt"},
-                             year:{$year: "$createdAt"}
-                        },
-                        total: {$sum: "$totalAmount"},
-                        count:{$sum:1},
-                    }
-                },
-                {$sort: {"_id.year" : 1, "_id.month": 1}}
-            ])
-          ]) 
-
-                 //Process status count
-                 const ordersByStatus = {
-                    processing:0,
-                    shipped:0,
-                    delivered:0,
-                    cancelled:0
-                 }
-
-
-                 statusCounts.forEach((item:any) =>{
-                    const status = item._id as keyof typeof ordersByStatus;
-                    if(ordersByStatus.hasOwnProperty(status)){
-                        ordersByStatus[status] = item.count;
-                    }
-                 });
-
-
-                 return response(res,200, "Dashboard statistics fetched successfully", {
-                    counts: {
-                        orders:totalOrders,
-                        users:totalUsers,
-                        products:totalProducts,
-                        revenue:revenue.length > 0 ? revenue[0].total : 0,
+                //Get monthly sales data for chart
+                ProductOrder.aggregate([
+                    { $match: { paymentStatus: "completed" } },
+                    {
+                        $group: {
+                            _id: {
+                                month: { $month: "$createdAt" },
+                                year: { $year: "$createdAt" }
+                            },
+                            total: { $sum: "$totalAmount" },
+                            count: { $sum: 1 },
+                        }
                     },
-                    ordersByStatus,
-                    recentOrders,
-                    monthlySales
-                 })
+                    { $sort: { "_id.year": 1, "_id.month": 1 } }
+                ])
+            ])
+
+        //Process status count
+        const ordersByStatus = {
+            processing: 0,
+            shipped: 0,
+            delivered: 0,
+            cancelled: 0
+        }
+
+        statusCounts.forEach((item: any) => {
+            const status = item._id as keyof typeof ordersByStatus;
+            if (ordersByStatus.hasOwnProperty(status)) {
+                ordersByStatus[status] = item.count;
+            }
+        });
+
+        const statsPayload = {
+            counts: {
+                orders: totalOrders,
+                users: totalUsers,
+                products: totalProducts,
+                revenue: revenue.length > 0 ? revenue[0].total : 0,
+            },
+            ordersByStatus,
+            recentOrders,
+            monthlySales
+        };
+
+        await cacheSet(DASHBOARD_KEY, statsPayload, ADMIN_TTL);
+        return response(res, 200, "Dashboard statistics fetched successfully", statsPayload);
     } catch (error) {
         console.error('Error processed dashboard statitics:', error)
-        return response(res,500, 'Internal server error');
+        return response(res, 500, 'Internal server error');
     }
 }
 
 
-export const getSellerPayment = async (req:Request,res:Response) =>{
+export const getSellerPayment = async (req: Request, res: Response) => {
 
     try {
-         const {sellerId, status,paymentMethod,startDate,endDate} = req.query;
+        const { sellerId, status, paymentMethod, startDate, endDate } = req.query;
 
-         const query: any = {};
+        // Build a stable cache key from query params
+        const cacheKey = `${ADMIN_SELLER_PAYMENTS_KEY}:${sellerId || 'all'}:${status || 'all'}:${paymentMethod || 'all'}:${startDate || ''}:${endDate || ''}`;
 
-         if(sellerId && sellerId !=='all') {
+        const cached = await cacheGet<any>(cacheKey);
+        if (cached) {
+            return response(res, 200, "seller Payments fetched successfully", cached);
+        }
+
+        const query: any = {};
+
+        if (sellerId && sellerId !== 'all') {
             query.seller = sellerId;
-         }
+        }
 
-         if(status && status !=='all') {
+        if (status && status !== 'all') {
             query.status = status;
-         }
+        }
 
-         if(paymentMethod && paymentMethod !=='all') {
+        if (paymentMethod && paymentMethod !== 'all') {
             query.paymentMethod = paymentMethod;
-         }
+        }
 
-
-         if(startDate && endDate){
+        if (startDate && endDate) {
             query.createdAt = {
                 $gte: new Date(startDate as string),
                 $lte: new Date(endDate as string)
             }
-          }
+        }
 
+        const payments = await SellerPayment.find(query)
+            .populate("seller", "name email phoneNumber paymentMode paymentDetails")
+            .populate("order")
+            .populate("product", "subject finalPrice images")
+            .populate("processedBy", "name")
+            .sort({ createdAt: -1 })
 
-          const payments = await SellerPayment.find(query)
-          .populate("seller", "name email phoneNumber paymentMode paymentDetails")
-          .populate("order")
-          .populate("product", "subject finalPrice images")
-          .populate("processedBy", "name")
-          .sort({createdAt: -1})
+        const users = await User.find();
 
+        const payload = { payments, users };
+        await cacheSet(cacheKey, payload, ADMIN_TTL);
+        return response(res, 200, "seller Payments fetched successfully", payload);
 
-          const users = await User.find();
-    
-
-          return response(res,200,"seller Payments fetched successfully",{payments,users} );
-         
     } catch (error) {
         console.error('failed to fetched  seller Payments', error)
-        return response(res,500, 'Internal server error');
+        return response(res, 500, 'Internal server error');
     }
 }

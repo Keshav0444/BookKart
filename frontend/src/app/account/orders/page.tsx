@@ -91,19 +91,29 @@ export default function OrdersPage() {
                   <CreditCard className="mr-2 h-4 w-4" />
                   Total: ₹{order.totalAmount}
                 </p>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center flex-wrap gap-2">
                   <span className="text-sm">Status:</span>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'delivered'
-                        ? 'bg-green-100 text-green-800'
-                        : order.status === 'processing'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : order.status === 'shipped'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : order.status === 'processing'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : order.status === 'shipped'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-red-100 text-red-800'
                       }`}
                   >
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${order.paymentStatus === 'completed'
+                        ? 'bg-green-100 text-green-800'
+                        : order.paymentStatus === 'failed'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-orange-100 text-orange-800'
+                      }`}
+                  >
+                    Payment: {order.paymentStatus?.charAt(0).toUpperCase() + order.paymentStatus?.slice(1)}
                   </span>
                 </div>
               </div>
