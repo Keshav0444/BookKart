@@ -1,45 +1,42 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
- service:"gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-transporter.verify((error, success) => {
+if (!process.env.RESEND_API_KEY) {
+  console.error('Email Config Error: RESEND_API_KEY is not set in environment variables.');
+} else {
+  console.log('Email service (Resend) is configured and ready.');
+}
+
+const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
+  try {
+    const from = process.env.EMAIL_FROM ?? 'BookKart <onboarding@resend.dev>';
+    const { error } = await resend.emails.send({ from, to, subject, html });
     if (error) {
-      console.error('SMTP Configuration Error:', error);
-    } else {
-      console.log('SMTP is configured properly and ready to send emails.');
+      console.error('Email sending failed:', error);
+      return false;
     }
-  });
-  
-
-const sendEmail = async (to: string, subject: string, html: string) => {
-  await transporter.sendMail({
-    from: `"Your Bookstore" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+    return true;
+  } catch (err) {
+    console.error('Email sending failed:', err);
+    return false;
+  }
 };
 
-export const sendVerificationEmail = async (to: string, token: string) => {
+export const sendVerificationEmail = async (to: string, token: string): Promise<boolean> => {
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
   const html = `
-    <h1>Welcome to Your Bookstore!</h1>
+    <h1>Welcome to BookKart!</h1>
     <p>Thank you for registering. Please click the link below to verify your email address:</p>
     <a href="${verificationUrl}">Verify Email</a>
     <p>If you didn't request this, please ignore this email.</p>
   `;
-  await sendEmail(to, 'Verify Your Email', html);
+  return sendEmail(to, 'Verify Your Email - BookKart', html);
 };
 
-export const sendPasswordResetEmail = async (to: string, token: string) => {
+export const sendPasswordResetEmail = async (to: string, token: string): Promise<boolean> => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
   const html = `
     <h1>Reset Your Password</h1>
@@ -47,5 +44,5 @@ export const sendPasswordResetEmail = async (to: string, token: string) => {
     <a href="${resetUrl}">Reset Password</a>
     <p>If you didn't request this, please ignore this email and your password will remain unchanged.</p>
   `;
-  await sendEmail(to, 'Reset Your Password', html);
+  return sendEmail(to, 'Reset Your Password - BookKart', html);
 };
