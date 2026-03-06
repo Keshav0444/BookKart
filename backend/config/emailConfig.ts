@@ -1,32 +1,25 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Lazy initialisation — avoids crashing at startup when the key is missing
-let _resend: Resend | null = null;
-
-function getResend(): Resend | null {
-  if (_resend) return _resend;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.warn('⚠️  Email service disabled: RESEND_API_KEY is not set.');
-    return null;
-  }
-  _resend = new Resend(key);
-  console.log('Email service (Resend) is configured and ready.');
-  return _resend;
-}
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
-  const resend = getResend();
-  if (!resend) return false;
   try {
-    const from = process.env.EMAIL_FROM ?? 'BookKart <onboarding@resend.dev>';
-    const { error } = await resend.emails.send({ from, to, subject, html });
-    if (error) {
-      console.error('Email sending failed:', error);
-      return false;
-    }
+    const from = process.env.EMAIL_USER;
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+    });
+    console.log('Email sent:', info.messageId);
     return true;
   } catch (err) {
     console.error('Email sending failed:', err);

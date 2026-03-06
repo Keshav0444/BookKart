@@ -13,35 +13,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendPasswordResetEmail = exports.sendVerificationEmail = void 0;
-const resend_1 = require("resend");
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// Lazy initialisation — avoids crashing at startup when the key is missing
-let _resend = null;
-function getResend() {
-    if (_resend)
-        return _resend;
-    const key = process.env.RESEND_API_KEY;
-    if (!key) {
-        console.warn('⚠️  Email service disabled: RESEND_API_KEY is not set.');
-        return null;
-    }
-    _resend = new resend_1.Resend(key);
-    console.log('Email service (Resend) is configured and ready.');
-    return _resend;
-}
+const transporter = nodemailer_1.default.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 const sendEmail = (to, subject, html) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const resend = getResend();
-    if (!resend)
-        return false;
     try {
-        const from = (_a = process.env.EMAIL_FROM) !== null && _a !== void 0 ? _a : 'BookKart <onboarding@resend.dev>';
-        const { error } = yield resend.emails.send({ from, to, subject, html });
-        if (error) {
-            console.error('Email sending failed:', error);
-            return false;
-        }
+        const from = process.env.EMAIL_USER;
+        const info = yield transporter.sendMail({
+            from,
+            to,
+            subject,
+            html,
+        });
+        console.log('Email sent:', info.messageId);
         return true;
     }
     catch (err) {
