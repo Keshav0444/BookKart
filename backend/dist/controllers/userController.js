@@ -16,6 +16,7 @@ exports.editUserProfile = void 0;
 const express_1 = require("express");
 const responseHandler_1 = require("../utils/responseHandler");
 const User_1 = __importDefault(require("../models/User"));
+const cache_1 = require("../utils/cache");
 const router = (0, express_1.Router)();
 /**
  * Edit User Profile by ID
@@ -27,15 +28,14 @@ const editUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!userId) {
             return (0, responseHandler_1.response)(res, 400, "User ID is required.");
         }
-        console.log('this is userId', userId);
         const { name, email, phoneNumber } = req.body;
-        console.log('this is req.body', req.body);
         // Find the user by ID and update the profile fields
         const updatedUser = yield User_1.default.findByIdAndUpdate(userId, { name, email, phoneNumber }, { new: true, runValidators: true }).select("-password -verificationToken -resetPasswordToken -resetPasswordExpires");
-        console.log(updatedUser);
         if (!updatedUser) {
             return (0, responseHandler_1.response)(res, 404, "User not found.");
         }
+        // Invalidate address/user cache since profile data is often denormalized
+        yield (0, cache_1.cacheDel)(`address:${userId}`);
         return (0, responseHandler_1.response)(res, 200, "User profile updated successfully.", updatedUser);
     }
     catch (error) {

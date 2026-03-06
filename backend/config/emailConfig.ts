@@ -2,15 +2,24 @@ import { Resend } from 'resend';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialisation — avoids crashing at startup when the key is missing
+let _resend: Resend | null = null;
 
-if (!process.env.RESEND_API_KEY) {
-  console.error('Email Config Error: RESEND_API_KEY is not set in environment variables.');
-} else {
+function getResend(): Resend | null {
+  if (_resend) return _resend;
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    console.warn('⚠️  Email service disabled: RESEND_API_KEY is not set.');
+    return null;
+  }
+  _resend = new Resend(key);
   console.log('Email service (Resend) is configured and ready.');
+  return _resend;
 }
 
 const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
+  const resend = getResend();
+  if (!resend) return false;
   try {
     const from = process.env.EMAIL_FROM ?? 'BookKart <onboarding@resend.dev>';
     const { error } = await resend.emails.send({ from, to, subject, html });

@@ -16,6 +16,9 @@ exports.getWishlist = exports.removeFromWishlist = exports.addToWishlist = void 
 const wishList_1 = __importDefault(require("../models/wishList"));
 const Products_1 = __importDefault(require("../models/Products"));
 const responseHandler_1 = require("../utils/responseHandler");
+const cache_1 = require("../utils/cache");
+const WISHLIST_KEY = (userId) => `wishlist:${userId}`;
+const WISHLIST_TTL = 300; // 5 minutes
 const addToWishlist = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req === null || req === void 0 ? void 0 : req.id;
@@ -32,6 +35,8 @@ const addToWishlist = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             wishlist.products.push(productId);
             yield wishlist.save();
         }
+        // Invalidate wishlist cache
+        yield (0, cache_1.cacheDel)(WISHLIST_KEY(userId));
         return (0, responseHandler_1.response)(res, 200, 'Product added to wishlist', wishlist);
     }
     catch (error) {
@@ -49,6 +54,8 @@ const removeFromWishlist = (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         wishlist.products = wishlist.products.filter(id => id.toString() !== productId);
         yield wishlist.save();
+        // Invalidate wishlist cache
+        yield (0, cache_1.cacheDel)(WISHLIST_KEY(userId));
         return (0, responseHandler_1.response)(res, 200, 'Product removed from wishlist', wishlist);
     }
     catch (error) {
@@ -59,12 +66,17 @@ exports.removeFromWishlist = removeFromWishlist;
 const getWishlist = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req === null || req === void 0 ? void 0 : req.id;
-        console.log(userId);
+        const key = WISHLIST_KEY(userId);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Wishlist fetched successfully', cached);
+        }
         const wishlist = yield wishList_1.default.findOne({ user: userId }).populate('products');
-        console.log(wishlist);
         if (!wishlist) {
             return (0, responseHandler_1.response)(res, 404, 'Wishlist not found');
         }
+        yield (0, cache_1.cacheSet)(key, wishlist, WISHLIST_TTL);
         (0, responseHandler_1.response)(res, 200, 'Wishlist fetched successfully', wishlist);
     }
     catch (error) {

@@ -16,6 +16,12 @@ exports.getProductsBySeller = exports.deleteProduct = exports.getProductById = e
 const Products_1 = __importDefault(require("../models/Products"));
 const responseHandler_1 = require("../utils/responseHandler");
 const cloudnaryConfig_1 = require("../config/cloudnaryConfig");
+const cache_1 = require("../utils/cache");
+const PRODUCTS_ALL_KEY = 'products:all';
+const PRODUCT_KEY = (id) => `products:${id}`;
+const PRODUCTS_SELLER_KEY = (sellerId) => `products:seller:${sellerId}`;
+const PRODUCTS_SELLER_PREFIX = 'products:seller:';
+const PRODUCTS_TTL = 300; // 5 minutes
 const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { title, description, price, category, condition, author, subject, edition, finalPrice, shippingCharge, classType, paymentMode, paymentDetails } = req.body;
@@ -36,7 +42,6 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 !parsedPaymentDetails.bankDetails.bankName)) {
             return (0, responseHandler_1.response)(res, 400, 'Complete bank details are required for Bank Account payment mode.');
         }
-        
         // Upload each file to Cloudinary and store the resulting URLs
         const uploadPromises = images.map(file => (0, cloudnaryConfig_1.uploadFileToCloudinary)(file));
         const uploadedImages = yield Promise.all(uploadPromises);
@@ -59,6 +64,11 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             paymentDetails: parsedPaymentDetails
         });
         yield product.save();
+        // Invalidate product list caches
+        yield Promise.all([
+            (0, cache_1.cacheDel)(PRODUCTS_ALL_KEY),
+            (0, cache_1.cacheDelByPrefix)(PRODUCTS_SELLER_PREFIX),
+        ]);
         return (0, responseHandler_1.response)(res, 201, 'Product created successfully', product);
     }
     catch (error) {
@@ -69,9 +79,15 @@ const createProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.createProduct = createProduct;
 const getAllProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(PRODUCTS_ALL_KEY);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Products fetched successfully', cached);
+        }
         const products = yield Products_1.default.find()
             .sort({ createdAt: -1 })
             .populate('seller', 'name email');
+        yield (0, cache_1.cacheSet)(PRODUCTS_ALL_KEY, products, PRODUCTS_TTL);
         (0, responseHandler_1.response)(res, 200, 'Products fetched successfully', products);
     }
     catch (error) {
@@ -81,6 +97,12 @@ const getAllProducts = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.getAllProducts = getAllProducts;
 const getProductById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const key = PRODUCT_KEY(req.params.id);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Product fetched successfully', cached);
+        }
         const product = yield Products_1.default.findById(req.params.id)
             .populate({
             path: 'seller',
@@ -93,6 +115,7 @@ const getProductById = (req, res) => __awaiter(void 0, void 0, void 0, function*
         if (!product) {
             return (0, responseHandler_1.response)(res, 404, 'Product not found');
         }
+        yield (0, cache_1.cacheSet)(key, product, PRODUCTS_TTL);
         (0, responseHandler_1.response)(res, 200, 'Product fetched successfully', product);
     }
     catch (error) {
@@ -106,6 +129,11 @@ const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!product) {
             return (0, responseHandler_1.response)(res, 404, 'Product not found');
         }
+        // Invalidate related caches
+        yield Promise.all([
+            (0, cache_1.cacheDel)(PRODUCTS_ALL_KEY, PRODUCT_KEY(req.params.productId)),
+            (0, cache_1.cacheDelByPrefix)(PRODUCTS_SELLER_PREFIX),
+        ]);
         (0, responseHandler_1.response)(res, 200, 'Product deleted successfully');
     }
     catch (error) {
@@ -119,12 +147,19 @@ const getProductsBySeller = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!sellerId) {
             return (0, responseHandler_1.response)(res, 400, 'Seller ID is required');
         }
+        const key = PRODUCTS_SELLER_KEY(sellerId);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Products fetched successfully', cached);
+        }
         const products = yield Products_1.default.find({ seller: sellerId })
             .sort({ createdAt: -1 })
             .populate('seller', 'name email profilePicture phoneNumber');
         if (products.length === 0) {
             return (0, responseHandler_1.response)(res, 202, 'No products found for this seller');
         }
+        yield (0, cache_1.cacheSet)(key, products, PRODUCTS_TTL);
         return (0, responseHandler_1.response)(res, 200, 'Products fetched successfully', products);
     }
     catch (error) {

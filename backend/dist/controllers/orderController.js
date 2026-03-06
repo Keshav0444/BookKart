@@ -19,11 +19,16 @@ const razorpay_1 = __importDefault(require("razorpay"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const responseHandler_1 = require("../utils/responseHandler");
 const crypto_1 = __importDefault(require("crypto"));
+const cache_1 = require("../utils/cache");
 dotenv_1.default.config();
 const razorpay = new razorpay_1.default({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+const ORDER_KEY = (id) => `orders:${id}`;
+const USER_ORDERS_KEY = (userId) => `orders:user:${userId}`;
+const ORDERS_PREFIX = 'orders:';
+const ORDER_TTL = 120; // 2 minutes
 const createOrUpdateOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req === null || req === void 0 ? void 0 : req.id;
@@ -60,7 +65,14 @@ const createOrUpdateOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (paymentDetails) {
             // Remove cart items after successful payment
             yield cartItems_1.default.findOneAndUpdate({ user: userId }, { $set: { items: [] } });
+            // Invalidate cart cache since items were cleared
+            yield (0, cache_1.cacheDel)(`cart:${userId}`);
         }
+        // Invalidate order caches
+        yield Promise.all([
+            (0, cache_1.cacheDel)(USER_ORDERS_KEY(userId), ORDER_KEY(order._id.toString())),
+            (0, cache_1.cacheDel)('admin:orders', 'admin:dashboard'),
+        ]);
         (0, responseHandler_1.response)(res, 201, 'Order created/updated successfully', order);
     }
     catch (error) {
@@ -71,6 +83,12 @@ const createOrUpdateOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.createOrUpdateOrder = createOrUpdateOrder;
 const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const key = ORDER_KEY(req.params.id);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Order fetched successfully', cached);
+        }
         const order = yield ProductOrder_1.default.findById(req.params.id)
             .populate('user', 'name email').populate('shippingAddress')
             .populate({
@@ -80,6 +98,7 @@ const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!order) {
             return (0, responseHandler_1.response)(res, 404, 'Order not found');
         }
+        yield (0, cache_1.cacheSet)(key, order, ORDER_TTL);
         (0, responseHandler_1.response)(res, 200, 'Order fetched successfully', order);
     }
     catch (error) {
@@ -90,13 +109,19 @@ exports.getOrderById = getOrderById;
 const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req === null || req === void 0 ? void 0 : req.id;
+        const key = USER_ORDERS_KEY(userId);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Orders fetched successfully', cached);
+        }
         const orders = yield ProductOrder_1.default.find({ user: userId }).sort({ createdAt: -1 })
             .populate('user', 'name email').populate('shippingAddress')
             .populate({
             path: 'items.product',
             model: 'Product',
         });
-        console.log(orders);
+        yield (0, cache_1.cacheSet)(key, orders, ORDER_TTL);
         (0, responseHandler_1.response)(res, 200, 'Orders fetched successfully', orders);
     }
     catch (error) {
@@ -132,11 +157,18 @@ const handleRazorpayWebhook = (req, res) => __awaiter(void 0, void 0, void 0, fu
     if (digest === req.headers['x-razorpay-signature']) {
         const paymentId = req.body.payload.payment.entity.id;
         const orderId = req.body.payload.payment.entity.order_id;
-        yield ProductOrder_1.default.findOneAndUpdate({ 'paymentDetails.razorpay_order_id': orderId }, {
+        const updated = yield ProductOrder_1.default.findOneAndUpdate({ 'paymentDetails.razorpay_order_id': orderId }, {
             paymentStatus: 'completed',
             status: 'processing',
             'paymentDetails.razorpay_payment_id': paymentId,
-        });
+        }, { new: true });
+        // Invalidate all order-related caches
+        if (updated) {
+            yield Promise.all([
+                (0, cache_1.cacheDelByPrefix)(ORDERS_PREFIX),
+                (0, cache_1.cacheDel)('admin:orders', 'admin:dashboard'),
+            ]);
+        }
         (0, responseHandler_1.response)(res, 200, 'Webhook processed successfully');
     }
     else {

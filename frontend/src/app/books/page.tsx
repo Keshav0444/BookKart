@@ -44,14 +44,14 @@ export default function BooksPage() {
   const [books, setBooks] = useState<BookDetails[]>([]);
   const router = useRouter();
 
-      const user = useSelector((state: RootState) => state.user.user);
+  const user = useSelector((state: RootState) => state.user.user);
 
-  
-      useEffect(() =>{
-        if(user && user.role !== "user"){
-          router.push('/admin')
-        }
-      },[user,router])
+
+  useEffect(() => {
+    if (user && user.role !== "user") {
+      router.push('/admin')
+    }
+  }, [user, router])
 
   const searchTerm = new URLSearchParams(window.location.search).get('search') || "";
 
@@ -76,28 +76,28 @@ export default function BooksPage() {
         setSelectedCategory(updateFilter);
         break;
     }
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
   const filteredBooks = books.filter((book) => {
     const conditionMatch =
       selectedCondition.length === 0 ||
       selectedCondition.map(cond => cond.toLowerCase()).includes(book.condition.toLowerCase());
-    
+
     const typeMatch =
-      selectedType.length === 0 || 
+      selectedType.length === 0 ||
       selectedType.map(type => type.toLowerCase()).includes(book.classType.toLowerCase());
-    
+
     const categoryMatch =
-      selectedCategory.length === 0 || 
+      selectedCategory.length === 0 ||
       selectedCategory.map(cat => cat.toLowerCase()).includes(book.category.toLowerCase());
 
-      const searchMatch = searchTerm
+    const searchMatch = searchTerm
       ? book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.category.toLowerCase().includes(searchTerm.toLowerCase()) 
+      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.category.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-  
+
     return conditionMatch && typeMatch && categoryMatch && searchMatch;
   });
 
@@ -182,8 +182,8 @@ export default function BooksPage() {
                               key === "condition"
                                 ? selectedCondition.includes(value)
                                 : key === "classType"
-                                ? selectedType.includes(value)
-                                : selectedCategory.includes(value)
+                                  ? selectedType.includes(value)
+                                  : selectedCategory.includes(value)
                             }
                             onCheckedChange={() => toggleFilter(key, value)}
                           />
@@ -249,20 +249,20 @@ export default function BooksPage() {
                                 height={300}
                                 className="h-[250px] w-full object-contain transition-transform duration-300 group-hover:scale-105"
                               />
-                        
+
                               <div className="absolute left-0 top-0 z-10 flex flex-col gap-2 p-3">
                                 {calculateDiscount(
                                   book.price,
                                   book.finalPrice
                                 ) > 0 && (
-                                  <Badge className="bg-orange-600/90 text-white hover:bg-orange-700">
-                                    {calculateDiscount(
-                                      book.price,
-                                      book.finalPrice
-                                    )}
-                                    % Off
-                                  </Badge>
-                                )}
+                                    <Badge className="bg-orange-600/90 text-white hover:bg-orange-700">
+                                      {calculateDiscount(
+                                        book.price,
+                                        book.finalPrice
+                                      )}
+                                      % Off
+                                    </Badge>
+                                  )}
                               </div>
 
                               {/* Heart Button */}

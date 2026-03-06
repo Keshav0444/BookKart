@@ -29,14 +29,10 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const verificationToken = crypto_1.default.randomBytes(20).toString('hex');
         const user = new User_1.default({ name, email, password, agreeTerms, verificationToken, role: role || 'user' });
         yield user.save();
-        try {
-            const result = yield (0, emailConfig_1.sendVerificationEmail)(user.email, verificationToken);
-            console.log(result);
-        }
-        catch (emailError) {
+        const emailSent = yield (0, emailConfig_1.sendVerificationEmail)(user.email, verificationToken);
+        if (!emailSent) {
             // Rollback user creation if email fails so they can retry
             yield User_1.default.deleteOne({ _id: user._id });
-            console.error('Email sending failed:', emailError);
             return (0, responseHandler_1.response)(res, 500, 'Registration failed: could not send verification email. Please try again.');
         }
         return (0, responseHandler_1.response)(res, 201, 'Registration successful. Please check your email to verify your account.');

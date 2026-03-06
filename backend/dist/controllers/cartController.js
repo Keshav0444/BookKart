@@ -16,6 +16,9 @@ exports.getCart = exports.removeFromCart = exports.addToCart = void 0;
 const cartItems_1 = __importDefault(require("../models/cartItems"));
 const Products_1 = __importDefault(require("../models/Products"));
 const responseHandler_1 = require("../utils/responseHandler");
+const cache_1 = require("../utils/cache");
+const CART_KEY = (userId) => `cart:${userId}`;
+const CART_TTL = 120; // 2 minutes
 const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req === null || req === void 0 ? void 0 : req.id;
@@ -43,6 +46,8 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             cart.items.push(newItem);
         }
         yield cart.save();
+        // Invalidate cart cache
+        yield (0, cache_1.cacheDel)(CART_KEY(userId));
         (0, responseHandler_1.response)(res, 200, "Item added to cart", cart);
     }
     catch (error) {
@@ -60,6 +65,8 @@ const removeFromCart = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         cart.items = cart.items.filter((item) => item.product.toString() !== productId);
         yield cart.save();
+        // Invalidate cart cache
+        yield (0, cache_1.cacheDel)(CART_KEY(userId));
         (0, responseHandler_1.response)(res, 200, "Item removed from cart", cart);
     }
     catch (error) {
@@ -70,11 +77,17 @@ exports.removeFromCart = removeFromCart;
 const getCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.params.userId;
-        console.log(userId);
+        const key = CART_KEY(userId);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, "Cart fetched successfully", cached);
+        }
         const cart = yield cartItems_1.default.findOne({ user: userId }).populate("items.product");
         if (!cart) {
             return (0, responseHandler_1.response)(res, 200, "Cart is empty", { items: [] });
         }
+        yield (0, cache_1.cacheSet)(key, cart, CART_TTL);
         (0, responseHandler_1.response)(res, 200, "Cart fetched successfully", cart);
     }
     catch (error) {

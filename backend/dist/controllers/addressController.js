@@ -13,9 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createOrUpdateAddressByUserId = exports.getAddressByUserId = void 0;
-const Address_1 = __importDefault(require("../models/Address")); // Import the Address model
+const Address_1 = __importDefault(require("../models/Address"));
 const responseHandler_1 = require("../utils/responseHandler");
 const User_1 = __importDefault(require("../models/User"));
+const cache_1 = require("../utils/cache");
+const ADDRESS_KEY = (userId) => `address:${userId}`;
+const ADDRESS_TTL = 300; // 5 minutes
 // Function to get address by userId
 const getAddressByUserId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -23,11 +26,18 @@ const getAddressByUserId = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!userId) {
             return (0, responseHandler_1.response)(res, 400, 'User not found');
         }
+        const key = ADDRESS_KEY(userId);
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(key);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, 'Address fetched successfully', cached);
+        }
         // Find the address by userId
         const address = yield User_1.default.findById(userId).populate('addresses');
         if (!address) {
             return (0, responseHandler_1.response)(res, 404, 'Address not found');
         }
+        yield (0, cache_1.cacheSet)(key, address, ADDRESS_TTL);
         return (0, responseHandler_1.response)(res, 200, 'Address fetched successfully', address);
     }
     catch (error) {
@@ -63,6 +73,8 @@ const createOrUpdateAddressByUserId = (req, res) => __awaiter(void 0, void 0, vo
             existingAddress.pincode = pincode;
             // Save the updated address
             yield existingAddress.save();
+            // Invalidate address cache
+            yield (0, cache_1.cacheDel)(ADDRESS_KEY(userId));
             return (0, responseHandler_1.response)(res, 200, 'Address updated successfully', existingAddress);
         }
         else {
@@ -80,6 +92,8 @@ const createOrUpdateAddressByUserId = (req, res) => __awaiter(void 0, void 0, vo
             yield newAddress.save();
             // Add the new address to the user's addresses array
             yield User_1.default.findByIdAndUpdate(userId, { $push: { addresses: newAddress._id } }, { new: true });
+            // Invalidate address cache
+            yield (0, cache_1.cacheDel)(ADDRESS_KEY(userId));
             return (0, responseHandler_1.response)(res, 201, 'Address added successfully', newAddress);
         }
     }

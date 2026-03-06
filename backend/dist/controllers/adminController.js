@@ -18,9 +18,20 @@ const ProductOrder_1 = __importDefault(require("../models/ProductOrder"));
 const responseHandler_1 = require("../utils/responseHandler");
 const User_1 = __importDefault(require("../models/User"));
 const Products_1 = __importDefault(require("../models/Products"));
+const cache_1 = require("../utils/cache");
+const DASHBOARD_KEY = 'admin:dashboard';
+const ADMIN_ORDERS_KEY = 'admin:orders';
+const ADMIN_SELLER_PAYMENTS_KEY = 'admin:seller-payments';
+const ADMIN_TTL = 60; // 1 minute — admin data changes frequently
 const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { status, paymentStatus, startDate, endDate } = req.query;
+        // Build a stable cache key from query params
+        const cacheKey = `${ADMIN_ORDERS_KEY}:${status || ''}:${paymentStatus || ''}:${startDate || ''}:${endDate || ''}`;
+        const cached = yield (0, cache_1.cacheGet)(cacheKey);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, "order fetched successfully", { orders: cached });
+        }
         const paidOrderRecord = yield SellerPayment_1.default.find().select('order');
         const paidOrderIds = paidOrderRecord.map((record) => record.order.toString());
         const query = {
@@ -48,6 +59,7 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             .populate("user", "name email")
             .populate("shippingAddress")
             .sort({ createdAt: -1 });
+        yield (0, cache_1.cacheSet)(cacheKey, orders, ADMIN_TTL);
         return (0, responseHandler_1.response)(res, 200, "order fetched successfully", { orders });
     }
     catch (error) {
@@ -72,6 +84,13 @@ const updateOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (notes)
             order.notes = notes;
         yield order.save();
+        // Invalidate admin orders, dashboard, and specific order caches
+        yield Promise.all([
+            (0, cache_1.cacheDelByPrefix)(ADMIN_ORDERS_KEY),
+            (0, cache_1.cacheDel)(DASHBOARD_KEY),
+            (0, cache_1.cacheDel)(`orders:${id}`),
+            (0, cache_1.cacheDelByPrefix)('orders:user:'),
+        ]);
         return (0, responseHandler_1.response)(res, 200, "Orderupdate successfully", order);
     }
     catch (error) {
@@ -113,6 +132,11 @@ const processSellerPayment = (req, res) => __awaiter(void 0, void 0, void 0, fun
             notes
         });
         yield sellerPayment.save();
+        // Invalidate seller payments and dashboard caches
+        yield Promise.all([
+            (0, cache_1.cacheDelByPrefix)(ADMIN_SELLER_PAYMENTS_KEY),
+            (0, cache_1.cacheDel)(DASHBOARD_KEY),
+        ]);
         return (0, responseHandler_1.response)(res, 200, "Payment to seller processed successfully", sellerPayment);
     }
     catch (error) {
@@ -123,6 +147,11 @@ const processSellerPayment = (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.processSellerPayment = processSellerPayment;
 const getDashboardStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Try cache first
+        const cached = yield (0, cache_1.cacheGet)(DASHBOARD_KEY);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, "Dashboard statistics fetched successfully", cached);
+        }
         const [totalOrders, totalUsers, totalProducts, statusCounts, recentOrders, revenue, monthlySales] = yield Promise.all([
             //Get Count 
             ProductOrder_1.default.countDocuments().lean(),
@@ -178,7 +207,7 @@ const getDashboardStats = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 ordersByStatus[status] = item.count;
             }
         });
-        return (0, responseHandler_1.response)(res, 200, "Dashboard statistics fetched successfully", {
+        const statsPayload = {
             counts: {
                 orders: totalOrders,
                 users: totalUsers,
@@ -188,7 +217,9 @@ const getDashboardStats = (req, res) => __awaiter(void 0, void 0, void 0, functi
             ordersByStatus,
             recentOrders,
             monthlySales
-        });
+        };
+        yield (0, cache_1.cacheSet)(DASHBOARD_KEY, statsPayload, ADMIN_TTL);
+        return (0, responseHandler_1.response)(res, 200, "Dashboard statistics fetched successfully", statsPayload);
     }
     catch (error) {
         console.error('Error processed dashboard statitics:', error);
@@ -199,6 +230,12 @@ exports.getDashboardStats = getDashboardStats;
 const getSellerPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { sellerId, status, paymentMethod, startDate, endDate } = req.query;
+        // Build a stable cache key from query params
+        const cacheKey = `${ADMIN_SELLER_PAYMENTS_KEY}:${sellerId || 'all'}:${status || 'all'}:${paymentMethod || 'all'}:${startDate || ''}:${endDate || ''}`;
+        const cached = yield (0, cache_1.cacheGet)(cacheKey);
+        if (cached) {
+            return (0, responseHandler_1.response)(res, 200, "seller Payments fetched successfully", cached);
+        }
         const query = {};
         if (sellerId && sellerId !== 'all') {
             query.seller = sellerId;
@@ -222,7 +259,9 @@ const getSellerPayment = (req, res) => __awaiter(void 0, void 0, void 0, functio
             .populate("processedBy", "name")
             .sort({ createdAt: -1 });
         const users = yield User_1.default.find();
-        return (0, responseHandler_1.response)(res, 200, "seller Payments fetched successfully", { payments, users });
+        const payload = { payments, users };
+        yield (0, cache_1.cacheSet)(cacheKey, payload, ADMIN_TTL);
+        return (0, responseHandler_1.response)(res, 200, "seller Payments fetched successfully", payload);
     }
     catch (error) {
         console.error('failed to fetched  seller Payments', error);
