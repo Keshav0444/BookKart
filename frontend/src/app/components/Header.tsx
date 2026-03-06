@@ -54,8 +54,8 @@ export default function Header() {
 
 
   const handleSearch = () => {
-    router.push(`/books?search=${encodeURIComponent(searchTerm)}`); 
-};
+    router.push(`/books?search=${encodeURIComponent(searchTerm)}`);
+  };
 
   const handleLogout = async () => {
     try {
@@ -97,37 +97,37 @@ export default function Header() {
   const menuItems = [
     ...(user && user
       ? [
-          {
-            href: "/account/profile",
-            content: (
-              <div className="flex space-x-4 items-center p-2 border-b ">
-                <Avatar className="w-12 h-12 -ml-2 rounded-full ">
-                  {user?.profilePicture ? (
-                    <AvatarImage src={user?.profilePicture} alt="User" />
-                  ) : (
-                    <AvatarFallback>{userPlaceholder}</AvatarFallback>
-                  )}
-                </Avatar>
+        {
+          href: "/account/profile",
+          content: (
+            <div className="flex space-x-4 items-center p-2 border-b ">
+              <Avatar className="w-12 h-12 -ml-2 rounded-full ">
+                {user?.profilePicture ? (
+                  <AvatarImage src={user?.profilePicture} alt="User" />
+                ) : (
+                  <AvatarFallback>{userPlaceholder}</AvatarFallback>
+                )}
+              </Avatar>
 
-                <div className="flex flex-col">
-                  <span className="font-semibold text-md">
-                    {user.name || "Guest User"}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {user.email || "No email provided"}
-                  </span>
-                </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-md">
+                  {user.name || "Guest User"}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {user.email || "No email provided"}
+                </span>
               </div>
-            ),
-          },
-        ]
+            </div>
+          ),
+        },
+      ]
       : [
-          {
-            icon: <Lock className="h-5 w-5" />,
-            label: "Login/Sign Up",
-            onClick: handleLoginClick,
-          },
-        ]),
+        {
+          icon: <Lock className="h-5 w-5" />,
+          label: "Login/Sign Up",
+          onClick: handleLoginClick,
+        },
+      ]),
     {
       icon: <User className="h-5 w-5" />,
       label: "My Profile",
@@ -175,12 +175,12 @@ export default function Header() {
     },
     ...(user && user
       ? [
-          {
-            icon: <LogOut className="h-5 w-5" />,
-            label: "Logout",
-            onClick: handleLogout,
-          },
-        ]
+        {
+          icon: <LogOut className="h-5 w-5" />,
+          label: "Logout",
+          onClick: handleLogout,
+        },
+      ]
       : []),
   ];
 
@@ -234,7 +234,7 @@ export default function Header() {
               placeholder="Book Name / Author / Subject / Publisher"
               className="w-full pr-10"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} 
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Button
               size="icon"
@@ -268,7 +268,7 @@ export default function Header() {
                     <User className="ml-2 mt-2" />
                   )}
                 </Avatar>
-                My Account
+                {user?.name || "My Account"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-80 p-2">
@@ -293,29 +293,29 @@ export default function Header() {
 
       {/* Mobile Header */}
       <div className="container mx-auto flex lg:hidden items-center justify-between p-4">
-      <Sheet>
-  <SheetTrigger asChild>
-    <Button variant="ghost" size="icon">
-      <Menu className="h-6 w-6" />
-    </Button>
-  </SheetTrigger>
-  <SheetContent side="left" className="w-80 p-0">
-    {/* Add a SheetHeader with SheetTitle */}
-    <SheetHeader>
-      <SheetTitle className="sr-only"></SheetTitle> 
-    </SheetHeader>
-    <div className="border-b p-4">
-      <Image
-        src="/images/web-logo.png"
-        alt="Clankart Logo"
-        width={150}
-        height={40}
-        className="h-10 w-auto"
-      />
-    </div>
-    <MenuItems className="py-2" />
-  </SheetContent>
-</Sheet>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0">
+            {/* Add a SheetHeader with SheetTitle */}
+            <SheetHeader>
+              <SheetTitle className="sr-only"></SheetTitle>
+            </SheetHeader>
+            <div className="border-b p-4">
+              <Image
+                src="/images/web-logo.png"
+                alt="Clankart Logo"
+                width={150}
+                height={40}
+                className="h-10 w-auto"
+              />
+            </div>
+            <MenuItems className="py-2" />
+          </SheetContent>
+        </Sheet>
 
         <Link href="/" className="flex items-center">
           <Image
@@ -333,7 +333,7 @@ export default function Header() {
               placeholder="Search books..."
               className="w-full pr-10"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} 
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Button
               size="icon"
@@ -346,14 +346,14 @@ export default function Header() {
           </div>
         </div>
         <Link href="/checkout/cart">
-        <Button variant="ghost" className="relative">
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                {user &&  cartItemsCount > 0 && (
-                  <span className="absolute top-2 left-5 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full px-1 text-xs">
-                    {cartItemsCount}
-                  </span>
-                )}
-              </Button>
+          <Button variant="ghost" className="relative">
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            {user && cartItemsCount > 0 && (
+              <span className="absolute top-2 left-5 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full px-1 text-xs">
+                {cartItemsCount}
+              </span>
+            )}
+          </Button>
         </Link>
       </div>
 

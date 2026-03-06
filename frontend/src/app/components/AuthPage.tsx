@@ -413,19 +413,26 @@ const Login: React.FC<LoginProps> = ({ isLoginOpen, setIsLoginOpen }) => {
             </motion.div>
           </AnimatePresence>
         </Tabs>
-        <p className="text-sm text-center text-gray-600">
-          By clicking "agree", you agree to our{" "}
-          <Link href="/terms-of-use" className="text-blue-500 hover:underline">
-            Terms of Use
-          </Link>
-          ,{" "}
-          <Link
-            href="/privacy-policy"
-            className="text-blue-500 hover:underline"
-          >
-            Privacy Policy
-          </Link>
-        </p>
+        {currentTab === "signup" && (
+          <p className="text-sm text-center text-gray-600 mt-4">
+            By clicking "agree", you agree to our{" "}
+            <Link
+              href="/terms-of-use"
+              className="text-blue-500 hover:underline"
+              onClick={() => setIsLoginOpen(false)}
+            >
+              Terms of Use
+            </Link>
+            ,{" "}
+            <Link
+              href="/privacy-policy"
+              className="text-blue-500 hover:underline"
+              onClick={() => setIsLoginOpen(false)}
+            >
+              Privacy Policy
+            </Link>
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );

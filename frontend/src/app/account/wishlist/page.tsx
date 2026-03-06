@@ -68,33 +68,33 @@ export default function WishlistPage() {
 
 
   const handleAddToCart = async (productId: string) => {
-      setIsAddingToCart(true);
-      try {
-        const result = await addToCartMutation({
-          productId,
-          quantity: 1,
-        }).unwrap();
-        console.log("Add to cart successfully", result);
-        if (result.success && result.data) {
-          dispatch(addToCart(result.data));
-          toast.success(result.message || "Added to cart successfully!");
-        } else {
-          throw new Error(result.message || "Failed to add to cart");
-        }
-      } catch (error: any) {
-        const errorMessage = error?.data?.message 
-        toast.error(errorMessage);
-      } finally {
-        setIsAddingToCart(false);
+    setIsAddingToCart(true);
+    try {
+      const result = await addToCartMutation({
+        productId,
+        quantity: 1,
+      }).unwrap();
+      console.log("Add to cart successfully", result);
+      if (result.success && result.data) {
+        dispatch(addToCart(result.data));
+        toast.success(result.message || "Added to cart successfully!");
+      } else {
+        throw new Error(result.message || "Failed to add to cart");
       }
+    } catch (error: any) {
+      const errorMessage = error?.data?.message
+      toast.error(errorMessage);
+    } finally {
+      setIsAddingToCart(false);
     }
- 
-    console.log('Add to cart successfully',cart)
-    const isItemInCart = (productId: string) => {
-      return cart.some((cartItem) => cartItem.product._id === productId);
-    };
+  }
 
-    console.log(isItemInCart)
+  console.log('Add to cart successfully', cart)
+  const isItemInCart = (productId: string) => {
+    return cart.some((cartItem) => cartItem.product._id === productId);
+  };
+
+  console.log(isItemInCart)
 
   if (isLoading) return <BookLoader />;
   if (!wishlistItems.length)
@@ -120,13 +120,13 @@ export default function WishlistPage() {
           <Card key={item._id}>
             <CardHeader>
               <CardTitle>{item.title}</CardTitle>
-              <CardDescription>${item.finalPrice.toFixed(2)}</CardDescription>
+              <CardDescription>₹ {item.finalPrice.toFixed(2)}</CardDescription>
             </CardHeader>
             <CardContent>
               <img
                 src={item.images[0]}
                 alt={item.title}
-                className="aspect-square w-full object-cover"
+                className="aspect-square w-full object-contain"
               />
             </CardContent>
             <CardFooter className="flex justify-between">
