@@ -110,3 +110,4 @@ export async function cacheDelByPrefix(prefix: string): Promise<void> {
 }
 
 export default getRedisClient;
+

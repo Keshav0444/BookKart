@@ -46,6 +46,7 @@ export default function Header() {
   const router = useRouter();
   const [logoutMutation] = useLogoutMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const cartItemsCount = useSelector(
     (state: RootState) => state.cart.items.length
   );
@@ -64,6 +65,7 @@ export default function Header() {
       toast.success("logged out successfully");
       router.push("/");
       setIsDropdownOpen(false);
+      setIsSheetOpen(false);
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -76,15 +78,18 @@ export default function Header() {
   const handleLoginClick = () => {
     dispatch(toggleLoginDialog());
     setIsDropdownOpen(false);
+    setIsSheetOpen(false);
   };
 
   const handleProtectedNavigation = (href: string) => {
     if (user) {
       router.push(href);
       setIsDropdownOpen(false);
+      setIsSheetOpen(false);
     } else {
       dispatch(toggleLoginDialog());
       setIsDropdownOpen(false);
+      setIsSheetOpen(false);
     }
   };
 
@@ -192,7 +197,10 @@ export default function Header() {
             key={index}
             href={item.href}
             className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent rounded-lg hover:bg-gray-200"
-            onClick={() => setIsDropdownOpen(false)}
+            onClick={() => {
+              setIsDropdownOpen(false);
+              setIsSheetOpen(false);
+            }}
           >
             {item.icon}
             <span>{item.label}</span>
@@ -293,7 +301,7 @@ export default function Header() {
 
       {/* Mobile Header */}
       <div className="container mx-auto flex lg:hidden items-center justify-between p-4">
-        <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
               <Menu className="h-6 w-6" />
